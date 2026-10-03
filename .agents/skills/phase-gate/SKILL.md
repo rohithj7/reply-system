@@ -16,6 +16,7 @@ This skill sequences checks and writes them up. CI is what enforces them.
    uv run ruff format --check .
    uv run mypy src
    uv run pytest -m "not live"
+   uv run doctours-reply eval --dry-run --suite all
    uv run python scripts/audit_submission.py --history
    ```
 

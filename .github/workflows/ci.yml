@@ -28,5 +28,7 @@ jobs:
         run: uv run mypy src
       - name: Tests (network-free)
         run: uv run pytest -m "not live"
+      - name: Eval suites (dry run, no model calls)
+        run: uv run doctours-reply eval --dry-run --suite all
       - name: Audit tree and history
         run: uv run python scripts/audit_submission.py --history

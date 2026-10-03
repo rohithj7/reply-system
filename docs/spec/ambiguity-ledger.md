@@ -1,6 +1,6 @@
 # Ambiguity and precedence ledger
 
-Where the packet's sources conflict, this ledger records which one wins and why. Line numbers refer to `docs/assignment/pre-deposit-respond-packet.md`. Entries marked **Needs reviewer confirmation** are judgment calls we would like confirmed.
+Where the packet's sources conflict, this ledger records which one wins and why. Line numbers refer to `docs/assignment/pre-deposit-respond-packet.md`. Judgment calls that needed confirmation say when they were accepted.
 
 ## Precedence, highest first
 
@@ -17,7 +17,7 @@ Expected outputs are never a source. A conflict between them and the sources abo
 - Conflict: the legacy prompt assumes routing happens upstream and bans handoff language (L876, L913-914, L1317, L1407). The assignment makes this system escalate (L7).
 - Resolution: the assignment wins. Handoff wording is allowed only in an escalated outcome. The legacy ban on handoff wording stays in force for every other reply.
 
-**A-02. Decline scripts versus escalation, and policy questions versus action requests.** **Needs reviewer confirmation.**
+**A-02. Decline scripts versus escalation, and policy questions versus action requests.** Accepted 2026-10-03.
 - Conflict: the legacy prompt has decline scripts for date holds, refunds, clinic contact, extra calls and discounts (L775, L903, L913, L922, L980, L1317, L1407). The assignment lists "contacting a clinic to hold a date" as an escalation (L7).
 - Resolution, with the full taxonomy planned for `policies/core/escalation.md`:
   - Escalate when the patient makes an action request, in any politeness form ("hold a date for me", "can you hold a date for me?", "could you call the clinic?"), that no supplied tool, documented self-service link or rule-backed redirect can satisfy.
@@ -29,11 +29,11 @@ Expected outputs are never a source. A conflict between them and the sources abo
 - Conflict: the mandate says "one short sentence" (L7), but the expected charge-card reply has two (L754).
 - Resolution: exactly one sentence of 20 words or fewer. It may name what cannot be done. The grading note (L759) does not count sentences.
 
-**A-04. Re-sending a link already sent.** **Needs reviewer confirmation**, because the grading note informed this rule.
+**A-04. Re-sending a link already sent.** Accepted 2026-10-03; the grading note informed this rule.
 - Conflict: the legacy prompt bans repeat links unless the patient asks (L883, L1267, L1549). Step 0 says to fetch the assessment link whenever it needs sharing (L1270-1271, L1312), and the grading note expects the assessment link (L759).
 - Resolution: re-send a link when the current request is to act on that resource (pay or book from it, open it, find it) or when the patient asks for it. Otherwise do not repeat it.
 
-**A-05. Consultation duration.** **Needs reviewer confirmation.**
+**A-05. Consultation duration.** Accepted 2026-10-03.
 - Conflict: a duration appears only in an expected reply (L742). Grounding rules forbid stating ungrounded consultation-format facts (L930, L946).
 - Resolution: state no duration. This knowingly deviates on one official check.
 
@@ -45,7 +45,7 @@ Expected outputs are never a source. A conflict between them and the sources abo
 - Conflict: the prompt says `xTool` while the functions are `x` (L319). `updateWorkingMemory` has no suffix (L1472).
 - Resolution: model-facing names are the function names, and the registry resolves `xTool` aliases (`tools/registry.py`).
 
-**A-08. Capabilities the prompt mentions but the packet does not supply.** **Needs reviewer confirmation.**
+**A-08. Capabilities the prompt mentions but the packet does not supply.** Accepted 2026-10-03.
 - Missing tools: getBookingPackageDetailsTool, getTripRecommendationsTool, searchAirportsTool, updateUserAirportTool, updateFlightPreferencesTool, getTripDetailsTool.
 - Missing systems: the booking-documents link (L897), the revision detector (L901, L1433) and Mastra memory (L1551-1554).
 - Resolution: none of these are exposed, and booked-tier rules are dropped. A request that needs one of them is an unsupported action and escalates (A-02). Revision requests keep the packet's stated behavior; the packet describes the revision queue as external automation, which this harness does not implement, and the README will say so.
@@ -83,7 +83,7 @@ Expected outputs are never a source. A conflict between them and the sources abo
 
 **A-17. Empty attachments.** `attachmentUrls` is `[]` when empty, following "leave empty" (L1025).
 
-**A-18. Escalated replies.** **Needs reviewer confirmation**; resolved as a design choice:
+**A-18. Escalated replies.** Accepted 2026-10-03 as a design choice:
 - `shouldFollowUp=false`, `followUpTiming=null`, `attachmentUrls=[]`.
 - `intent` is a short phrase.
 - `highEngagement=false`.
