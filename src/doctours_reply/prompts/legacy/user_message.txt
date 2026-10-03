@@ -1,0 +1,8 @@
+Incoming thread message:
+"{{HUMAN_MESSAGE}}"
+Incoming image count: 0
+Chat kind: DIRECT
+Triggering sender: Jordan Hale
+
+Recent conversation summary:
+{{RECENT_CONVERSATION_SUMMARY}}

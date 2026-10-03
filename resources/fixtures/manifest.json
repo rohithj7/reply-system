@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "fixtures": [
+    {
+      "fixture_id": "packet",
+      "derived_from": "packet",
+      "files": [
+        {
+          "role": "constants",
+          "path": "packet/constants.json",
+          "sha256": "bc38ce1685e7b0265190b64a6a7ff1345a0dd28ae1becbfd1c0c614b2b48ce11"
+        },
+        {
+          "role": "tool_data",
+          "path": "packet/tool_data.json",
+          "sha256": "ac6227aa6d4b803d5d3faa2b5674351bc748085e78318fb03bc625b6f2575971"
+        }
+      ]
+    }
+  ]
+}
