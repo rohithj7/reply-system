@@ -1,0 +1,290 @@
+{
+  "$defs": {
+    "CollectionState": {
+      "additionalProperties": false,
+      "properties": {
+        "areaAskCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Areaaskcount"
+        },
+        "lastAskedItem": {
+          "anyOf": [
+            {
+              "enum": [
+                "area",
+                "name",
+                "photos",
+                "none"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lastaskeditem"
+        },
+        "nameAskCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nameaskcount"
+        },
+        "photoAskCount": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Photoaskcount"
+        }
+      },
+      "title": "CollectionState",
+      "type": "object"
+    },
+    "WorkingMemoryUpdates": {
+      "additionalProperties": false,
+      "description": "A partial memory diff; serialize with `exclude_unset=True` so unset keys are omitted.",
+      "properties": {
+        "collectionState": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CollectionState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "communicationStyle": {
+          "anyOf": [
+            {
+              "enum": [
+                "detailed",
+                "concise",
+                "casual",
+                "formal",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Communicationstyle"
+        },
+        "escalationFlags": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Escalationflags"
+        },
+        "keyConcerns": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Keyconcerns"
+        },
+        "patientName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Patientname"
+        },
+        "preferredPaymentMethod": {
+          "anyOf": [
+            {
+              "enum": [
+                "financing",
+                "layaway",
+                "pay_in_full",
+                "cash_preference",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preferredpaymentmethod"
+        },
+        "procedureArea": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Procedurearea"
+        },
+        "promisesMade": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Promisesmade"
+        },
+        "targetProcedureWindow": {
+          "anyOf": [
+            {
+              "enum": [
+                "within_3_months",
+                "within_6_months",
+                "within_8_months",
+                "within_12_months",
+                "over_12_months",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Targetprocedurewindow"
+        }
+      },
+      "title": "WorkingMemoryUpdates",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "response": {
+      "title": "Response",
+      "type": "string"
+    },
+    "escalate": {
+      "title": "Escalate",
+      "type": "boolean"
+    },
+    "escalationReason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Escalationreason"
+    },
+    "templateId": {
+      "title": "Templateid",
+      "type": "null"
+    },
+    "intent": {
+      "title": "Intent",
+      "type": "string"
+    },
+    "shouldFollowUp": {
+      "title": "Shouldfollowup",
+      "type": "boolean"
+    },
+    "followUpTiming": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Followuptiming"
+    },
+    "attachmentUrls": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 3,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Attachmenturls"
+    },
+    "highEngagement": {
+      "title": "Highengagement",
+      "type": "boolean"
+    },
+    "workingMemoryUpdates": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/WorkingMemoryUpdates"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "response",
+    "escalate",
+    "escalationReason",
+    "templateId",
+    "intent",
+    "shouldFollowUp",
+    "followUpTiming",
+    "attachmentUrls",
+    "highEngagement",
+    "workingMemoryUpdates"
+  ],
+  "title": "Reply",
+  "type": "object"
+}
