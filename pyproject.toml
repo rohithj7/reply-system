@@ -9,6 +9,9 @@ dependencies = [
     "pydantic>=2.11,<3",
 ]
 
+[project.scripts]
+doctours-reply = "doctours_reply.cli:main"
+
 [dependency-groups]
 dev = [
     "mypy>=1.15",

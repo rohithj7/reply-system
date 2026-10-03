@@ -1,6 +1,8 @@
 """The runtime never imports evaluation code or reads `eval/` or `docs/` (packet L719)."""
 
 import ast
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,6 +14,10 @@ RUNTIME_MODULES = sorted(
 )
 FORBIDDEN_DIRS = {"eval", "docs"}
 PRIVATE_PACKAGE = "doctours" + "_ml"
+# The `eval` subcommand's dispatch, imported inside `main` only.
+LAZY_ALLOWED = {
+    "cli.py": frozenset({"doctours_reply.evaluation.cli", "doctours_reply.evaluation.cli.main"})
+}
 
 
 def _docstring_nodes(tree: ast.AST) -> set[int]:
@@ -33,9 +39,10 @@ def _forbidden_path(value: str) -> bool:
     )
 
 
-def violations(source: str) -> list[str]:
+def violations(source: str, lazy_allowed: frozenset[str] = frozenset()) -> list[str]:
     tree = ast.parse(source)
     docstrings = _docstring_nodes(tree)
+    top_level = {id(node) for node in tree.body}
     found = []
     for node in ast.walk(tree):
         modules: list[str] = []
@@ -43,8 +50,11 @@ def violations(source: str) -> list[str]:
             modules = [alias.name for alias in node.names]
         elif isinstance(node, ast.ImportFrom) and node.module:
             modules = [node.module] + [f"{node.module}.{alias.name}" for alias in node.names]
+        lazy = id(node) not in top_level and set(modules) <= lazy_allowed
         bad = [
-            m for m in modules if m.startswith("doctours_reply.evaluation") or PRIVATE_PACKAGE in m
+            m
+            for m in modules
+            if not lazy and (m.startswith("doctours_reply.evaluation") or PRIVATE_PACKAGE in m)
         ]
         if bad:
             found.append(f"line {node.lineno}: imports {bad[0]}")
@@ -68,7 +78,29 @@ def violations(source: str) -> list[str]:
 
 @pytest.mark.parametrize("path", RUNTIME_MODULES, ids=lambda p: str(p.relative_to(PACKAGE)))
 def test_runtime_module_respects_the_boundary(path: Path) -> None:
-    assert violations(path.read_text("utf-8")) == []
+    allowed = LAZY_ALLOWED.get(str(path.relative_to(PACKAGE)), frozenset())
+    assert violations(path.read_text("utf-8"), allowed) == []
+
+
+def test_lazy_allowance_does_not_cover_module_level_imports() -> None:
+    source = "from doctours_reply.evaluation.cli import main\n"
+    assert violations(source, LAZY_ALLOWED["cli.py"]) != []
+
+
+def test_run_command_never_loads_evaluation(tmp_path: Path) -> None:
+    source = tmp_path / "in.json"
+    source.write_text("[]")
+    probe = (
+        "import sys\n"
+        "from doctours_reply.cli import main\n"
+        f"assert main(['run', '--input', {str(source)!r}, '--output', '-']) == 0\n"
+        "loaded = [m for m in sys.modules if m.startswith('doctours_reply.evaluation')]\n"
+        "assert not loaded, loaded\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True, timeout=60, check=False
+    )
+    assert result.returncode == 0, result.stderr
 
 
 def test_checker_flags_planted_violations() -> None:
