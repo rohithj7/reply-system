@@ -1,0 +1,32 @@
+[
+  {
+    "id": "heva-packages",
+    "escalate": false,
+    "escalationReason": null,
+    "response": "Heva specializes in Afro hair, so 4C curls are a fit. They have two packages. Silver is $3,000 USD with a $500 deposit. Gold is $4,500 USD with a $600 deposit. You can pay from your assessment.\nhttps://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333"
+  },
+  {
+    "id": "hakan-price",
+    "escalate": false,
+    "escalationReason": null,
+    "response": "Dr. Hakan Clinic has one package, Sapphire, at $3,200 USD with a $500 deposit."
+  },
+  {
+    "id": "consultation",
+    "escalate": false,
+    "escalationReason": null,
+    "response": "Yes. The consultation is a free phone call, usually 15 to 20 minutes.\nhttps://www.doctours.com/consultation"
+  },
+  {
+    "id": "demand-human",
+    "escalate": true,
+    "escalationReason": "Asked to talk to a human",
+    "response": "I'm getting a person for you."
+  },
+  {
+    "id": "charge-card",
+    "escalate": true,
+    "escalationReason": "Asked to charge a card number",
+    "response": "I can't charge a card. I'm getting a person for you."
+  }
+]

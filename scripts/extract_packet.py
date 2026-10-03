@@ -1,4 +1,5 @@
-"""Extract the packet fixture constants, legacy prompts and TypeScript tool reference.
+"""Extract the packet fixture constants, legacy prompts, TypeScript tool reference and
+the official messages and expected replies (evaluation only).
 
 Usage:
     uv run python scripts/extract_packet.py          # write the extracted files
@@ -71,10 +72,29 @@ def ts_string_fields(block: str) -> list[tuple[str, str]]:
     return [(key, json.loads(literal)) for key, literal in _TS_STRING_FIELD.findall(block)]
 
 
+def ts_array(block: str, name: str) -> list[dict[str, Any]]:
+    """Parse `const NAME = [{key: "string" | true | false | null, ...}, ...];`."""
+    body = block.split(f"const {name} = [", 1)[1].rsplit("];", 1)[0]
+    literal = "[" + re.sub(r"^(\s*)(\w+):", r'\1"\2":', body, flags=re.MULTILINE) + "]"
+    rows: list[dict[str, Any]] = json.loads(re.sub(r",(\s*[}\]])", r"\1", literal))
+    return rows
+
+
+def _json(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, indent=2) + "\n"
+
+
 def extracted_files(packet: str) -> dict[Path, str]:
     constants = parse_constants(fenced_block(packet, "### Constants"))
     legacy = REPO_ROOT / "src" / "doctours_reply" / "prompts" / "legacy"
+    official = REPO_ROOT / "eval" / "official"
     return {
+        official / "human_messages.json": _json(
+            ts_array(fenced_block(packet, "### Human messages"), "HUMAN_MESSAGES")
+        ),
+        official / "expected_replies.json": _json(
+            ts_array(fenced_block(packet, "### Expected outputs"), "EXPECTED_REPLIES")
+        ),
         REPO_ROOT / "resources" / "fixtures" / "packet" / "constants.json": (
             json.dumps(constants, ensure_ascii=False, indent=2) + "\n"
         ),
