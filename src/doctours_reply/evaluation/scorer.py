@@ -12,7 +12,14 @@ from pathlib import Path
 from typing import Any
 
 from doctours_reply.contract.reply import Reply
-from doctours_reply.evaluation.cases import EVAL_DIR, MONEY_ATTRIBUTES, Case, FactLabel, Labels
+from doctours_reply.evaluation.cases import (
+    EVAL_DIR,
+    MONEY_ATTRIBUTES,
+    WEEKDAY_ATTRIBUTE,
+    Case,
+    FactLabel,
+    Labels,
+)
 from doctours_reply.runtime.evidence import urls_in
 from doctours_reply.runtime.grounding import money_mentions, split_sentences
 from doctours_reply.runtime.observation import Observation
@@ -92,9 +99,9 @@ def score_case(
         ),
         validation_repairs=purposes.count("validation_repair"),
         tool_selection=tool_selection(labels, trace.observations, fixture),
-        required_facts_hit=sum(_has_fact(reply.response, f) for f in labels.required_facts),
+        required_facts_hit=sum(has_fact(reply.response, f) for f in labels.required_facts),
         required_facts_total=len(labels.required_facts),
-        forbidden_hits=sum(_has_fact(reply.response, f) for f in labels.forbidden_facts),
+        forbidden_hits=sum(has_fact(reply.response, f) for f in labels.forbidden_facts),
         urls_required_hit=sum(u in _reply_urls(reply) for u in labels.urls_required),
         urls_required_total=len(labels.urls_required),
         urls_forbidden_hits=sum(u in _reply_urls(reply) for u in labels.urls_forbidden),
@@ -193,16 +200,38 @@ def _matches(expectation: Any, observation: Observation, fixture: Fixture) -> bo
     return True
 
 
-def _has_fact(response: str, fact: FactLabel) -> bool:
+def has_fact(response: str, fact: FactLabel) -> bool:
     if fact.attribute in MONEY_ATTRIBUTES:
         return any(
             re.search(rf"\b{re.escape(fact.entity)}\b", sentence, re.IGNORECASE)
             and any(m.amount == fact.value for m in money_mentions(sentence))
             for sentence in split_sentences(response)
         )
+    if fact.attribute == WEEKDAY_ATTRIBUTE:
+        return _mentions_weekday(response, str(fact.value))
     if isinstance(fact.value, str):
-        return _normalized(fact.value) in _normalized(response)
+        phrase = rf"(?<!\w){re.escape(_normalized(fact.value))}s?(?!\w)"
+        return re.search(phrase, _normalized(response)) is not None
     return re.search(rf"\b{re.escape(fact.entity)}\b", response, re.IGNORECASE) is not None
+
+
+_WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
+_DAY = "(" + "|".join(f"{day}|{day[:3]}" for day in _WEEKDAYS) + ")s?"
+_DAY_WORD = re.compile(rf"\b{_DAY}\b")
+_DAY_RANGE = re.compile(rf"\b{_DAY}\.?\s*(?:-|–|—|to|through|thru)\s*{_DAY}\b")
+
+
+def _mentions_weekday(response: str, day: str) -> bool:
+    """`day` named as a word, or inside a stated range such as "Monday to Friday"."""
+    text = response.lower()
+    target = _day_index(day)
+    if any(_day_index(m.group(1)) == target for m in _DAY_WORD.finditer(text)):
+        return True
+    return any(_day_index(a) <= target <= _day_index(b) for a, b in _DAY_RANGE.findall(text))
+
+
+def _day_index(name: str) -> int:
+    return [day[:3] for day in _WEEKDAYS].index(name[:3].lower())
 
 
 _NUMBER_WORDS = {

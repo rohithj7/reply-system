@@ -7,7 +7,7 @@ from support import GOLD_ID, HEVA_ANSWER, reply_json
 from doctours_reply.contract.io import InputItem
 from doctours_reply.contract.reply import Reply
 from doctours_reply.evaluation import cli as eval_cli
-from doctours_reply.evaluation.cases import Case, Labels, check_case, load_suite
+from doctours_reply.evaluation.cases import Case, FactLabel, Labels, check_case, load_suite
 from doctours_reply.evaluation.schedule import (
     ScheduleError,
     begin_logged_run,
@@ -16,7 +16,7 @@ from doctours_reply.evaluation.schedule import (
     read_log,
     summary_problems,
 )
-from doctours_reply.evaluation.scorer import official_checks, score_case, tool_selection
+from doctours_reply.evaluation.scorer import has_fact, official_checks, score_case, tool_selection
 from doctours_reply.evaluation.stats import percentile, wilson
 from doctours_reply.models.scripted import ScriptedModelClient, text_response, tool_response
 from doctours_reply.runtime.executor import Executor
@@ -59,6 +59,8 @@ def test_label_consistency_is_checked(fixture: Fixture) -> None:
             required_facts=[
                 {"entity": "Gold", "attribute": "basePrice", "value": 4000},
                 {"entity": "Gold", "attribute": "included.Hotel", "value": "3 night"},
+                {"entity": "Silver", "attribute": "bookableWeekdays", "value": "Wed"},
+                {"entity": "Silver", "attribute": "bookableWeekdays", "value": "Thu"},
             ],
         ),
     )
@@ -66,7 +68,39 @@ def test_label_consistency_is_checked(fixture: Fixture) -> None:
         "x: unknown clinic 'nowhere'",
         "x: Gold.basePrice is not 4000",
         "x: Gold does not include '3 night' Hotel",
+        "x: Silver is not bookable on Wed",
     ]
+
+
+@pytest.mark.parametrize(
+    ("response", "value", "hit"),
+    [
+        ("Gold includes three nights at the hotel.", "3 night", True),
+        ("Gold includes a 3-night hotel stay.", "3 night", True),
+        ("That comes to 13 nights in total.", "3 night", False),
+        ("Your doctor is Dr. Sibel's team lead.", "Sibel", True),
+        ("Ask the Sibelius quartet.", "Sibel", False),
+    ],
+)
+def test_string_facts_match_whole_words(response: str, value: str, hit: bool) -> None:
+    fact = FactLabel(entity="Gold", attribute="included.Hotel", value=value)
+    assert has_fact(response, fact) is hit
+
+
+@pytest.mark.parametrize(
+    ("response", "day", "hit"),
+    [
+        ("Sapphire can be booked Monday through Friday.", "Wed", True),
+        ("Gold runs Mon-Sat.", "Sat", True),
+        ("Silver is available Monday, Tuesday, Thursday and Friday.", "Thu", True),
+        ("Silver is not offered on Wednesdays.", "Thu", False),
+        ("Weekends are not allowed for Sapphire.", "Wed", False),
+        ("Silver runs Mon to Tue.", "Thu", False),
+    ],
+)
+def test_weekday_facts_accept_names_and_ranges(response: str, day: str, hit: bool) -> None:
+    fact = FactLabel(entity="Sapphire", attribute="bookableWeekdays", value=day)
+    assert has_fact(response, fact) is hit
 
 
 def test_official_cases_join_texts_without_expected_outputs() -> None:

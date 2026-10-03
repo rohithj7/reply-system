@@ -46,6 +46,7 @@ Control = Literal[
     "rule_backed_redirect",
 ]
 MONEY_ATTRIBUTES: Final = ("basePrice", "depositAmount")
+WEEKDAY_ATTRIBUTE: Final = "bookableWeekdays"
 
 
 class _Label(BaseModel):
@@ -200,6 +201,12 @@ def check_case(case: Case, fixture: Fixture) -> list[str]:
             and packages[fact.entity][fact.attribute] != fact.value
         ):
             problems.append(f"{fact.entity}.{fact.attribute} is not {fact.value}")
+        elif (
+            fact.attribute == WEEKDAY_ATTRIBUTE
+            and fact.entity in packages
+            and str(fact.value)[:3].upper() not in packages[fact.entity][WEEKDAY_ATTRIBUTE]
+        ):
+            problems.append(f"{fact.entity} is not bookable on {fact.value}")
         elif fact.attribute and fact.attribute.startswith("included.") and fact.entity in packages:
             addon = fact.attribute.removeprefix("included.")
             included = {
