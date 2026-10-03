@@ -1,0 +1,32 @@
+# Python and tooling
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+dist/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Local run output
+runs/
+out/
+
+# Model weights and checkpoints never belong in this repo
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.h5
+
+# Planning files stay outside the checkout; this entry is only a guard
+.cursor/plans/
+
+.DS_Store
