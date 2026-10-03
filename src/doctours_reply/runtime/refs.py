@@ -115,6 +115,7 @@ class Fixture:
     fixture_id: str
     constants: Mapping[str, Any]
     tool_data: ToolData
+    resolved_hash: str
 
 
 @dataclass(frozen=True)
@@ -144,7 +145,10 @@ def resolve_fixture(fixture_id: str, resources_dir: Path = RESOURCES_DIR) -> Fix
         constants = json.loads(files["constants"])
     except (ValidationError, ValueError) as exc:
         raise RefError(f"fixture {fixture_id!r} is malformed: {exc}") from exc
-    return Fixture(fixture_id=fixture_id, constants=constants, tool_data=tool_data)
+    digest = hashlib.sha256()
+    for f in sorted(entry.files, key=lambda f: f.role):
+        digest.update(f"{f.role}:{f.sha256}\n".encode())
+    return Fixture(fixture_id, constants, tool_data, digest.hexdigest())
 
 
 def resolve_policy_set(

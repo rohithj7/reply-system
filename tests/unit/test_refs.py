@@ -63,6 +63,18 @@ def test_packet_fixture_resolves_from_shipped_resources() -> None:
     assert [c["slug"] for c in fixture.tool_data.clinics] == ["heva", "dr-hakan"]
 
 
+def test_fixture_hash_covers_its_file_hashes(copied_fixture: Path) -> None:
+    packet = resolve_fixture("packet")
+    assert resolve_fixture("copy", copied_fixture).resolved_hash == packet.resolved_hash
+    path = copied_fixture / "fixtures" / "copy" / "tool_data.json"
+    path.write_text(path.read_text("utf-8").replace("3000", "3100"), "utf-8")
+    manifest_path = copied_fixture / "fixtures" / "manifest.json"
+    manifest = json.loads(manifest_path.read_text("utf-8"))
+    manifest["fixtures"][0]["files"][1]["sha256"] = _sha(path)
+    _write_json(manifest_path, manifest)
+    assert resolve_fixture("copy", copied_fixture).resolved_hash != packet.resolved_hash
+
+
 def test_shipped_policy_set_resolves_deterministically() -> None:
     first, second = resolve_policy_set("shipped"), resolve_policy_set("shipped")
     assert first.resolved_hash == second.resolved_hash

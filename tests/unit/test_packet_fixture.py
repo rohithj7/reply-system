@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 from types import ModuleType
 
+from doctours_reply.runtime.context import fill_placeholders
 from doctours_reply.runtime.refs import resolve_fixture
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -48,24 +49,19 @@ def test_legacy_templates_match_the_packet_byte_for_byte(packet_extract: ModuleT
 
 def test_only_clinic_slug_remains_after_filling_constants() -> None:
     constants = resolve_fixture("packet").constants
-
-    def fill(template: str, values: dict[str, object]) -> str:
-        def value(match: re.Match[str]) -> str:
-            name = match.group(0)[2:-2]
-            if name not in values:
-                return match.group(0)
-            item = values[name]
-            return item if isinstance(item, str) else json.dumps(item)
-
-        return PLACEHOLDER.sub(value, template)
-
-    system = fill((LEGACY / "system_prompt.txt").read_text("utf-8"), dict(constants))
+    system = fill_placeholders((LEGACY / "system_prompt.txt").read_text("utf-8"), constants)
     assert set(PLACEHOLDER.findall(system)) == {"{{clinic.slug}}"}
-    user = fill(
+    user = fill_placeholders(
         (LEGACY / "user_message.txt").read_text("utf-8"),
         {"HUMAN_MESSAGE": "Hello", **constants},
     )
     assert PLACEHOLDER.findall(user) == []
+
+
+def test_filling_is_single_pass_so_patient_text_is_not_expanded() -> None:
+    filled = fill_placeholders("{{HUMAN_MESSAGE}} / {{TIER}}", {"HUMAN_MESSAGE": "{{TIER}}"})
+    assert filled == "{{TIER}} / {{TIER}}"
+    assert fill_placeholders("{{X}}", {"X": [1, None, True]}) == "[1, null, true]"
 
 
 def test_manifest_hashes_the_packet_fixture_files() -> None:
