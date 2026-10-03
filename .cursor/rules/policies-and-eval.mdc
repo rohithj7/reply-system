@@ -1,0 +1,12 @@
+---
+description: Runtime policy modules, evaluation sets, labels and exported datasets
+globs: src/doctours_reply/policies/**,src/doctours_reply/evaluation/**,eval/**,datasets/**
+alwaysApply: false
+---
+
+- Policy modules start with `+++` TOML front matter holding `id` and `version`. Bump `version` on every content change, and keep `sources` pointing at packet lines.
+- Policy text contains no fixture facts and no evaluation text.
+- Overlays in `resources/policy_sets/` declare the `replaces_version` they expect; update it when the base module moves.
+- Labels never come from expected outputs. Frozen sets (held-out, sealed) are never edited.
+- Held-out runs happen only through the logged schedule, never ad hoc.
+- Runtime code never imports `doctours_reply.evaluation`.

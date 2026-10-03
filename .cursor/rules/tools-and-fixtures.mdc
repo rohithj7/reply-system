@@ -1,0 +1,12 @@
+---
+description: Faithful tool port, packet fixtures and hashed runtime resources
+globs: src/doctours_reply/tools/**,src/doctours_reply/prompts/**,src/doctours_reply/runtime/refs.py,tests/conformance/**,resources/**
+alwaysApply: false
+---
+
+- Tool behavior must equal `tests/conformance/goldens/packet_tools.json`, including key order. On a mismatch, fix the Python port; never edit a golden by hand.
+- Add no patient-facing tool or parameter. The registry rejects unknown argument keys.
+- Keep null semantics: a `null` result means no data, and nothing fills it in.
+- `resources/fixtures/packet/`, `src/doctours_reply/prompts/legacy/` and `tests/conformance/reference/` are extracted verbatim by `scripts/extract_packet.py`. Never edit them by hand.
+- Every file under `resources/fixtures/` and `resources/policy_sets/` is listed with its sha256 in that directory's `manifest.json`. Update the hash in the same commit.
+- `resources/` never holds labels, expected answers or official expected text.

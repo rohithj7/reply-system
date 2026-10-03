@@ -1,0 +1,10 @@
+---
+description: Output contract rules for the Reply models, the schema snapshot and terminal-outcome code
+globs: src/doctours_reply/contract/**,src/doctours_reply/runtime/outcome.py,src/doctours_reply/runtime/finalize.py,src/doctours_reply/runtime/validate.py,schemas/**
+alwaysApply: false
+---
+
+- Do not add, rename or retype `Reply` or `WorkingMemoryUpdates` fields; packet L37-82 fixes them.
+- Changing `schemas/reply.schema.json` is a deliberate contract change. Regenerate it with `uv run python -m doctours_reply.contract > schemas/reply.schema.json` and say why in the commit.
+- `templateId` is always null. `escalationReason` is non-empty exactly when `escalate` is true. `attachmentUrls` holds at most 3 URLs, all returned by a tool on this turn.
+- Each item has one terminal outcome. Once escalation is selected, no further tool runs. The finalizer executes nothing.
