@@ -1,0 +1,4329 @@
+{
+  "generator": "scripts/gen_tool_goldens.mjs",
+  "node": "v22.22.2",
+  "source_sha256": "e8f2bccdceb67accdc98a9134597328856727f11109d494a67eaa672e57214e7",
+  "cases": [
+    {
+      "function": "findClinic",
+      "args": {},
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": "11111111-1111-4111-8111-111111111111"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": "22222222-2222-4222-8222-222222222222"
+      },
+      "result": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Dr. Hakan Clinic",
+        "slug": "dr-hakan",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/dr-hakan",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "hairline design"
+          ],
+          "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": "33333333-3333-4333-8333-333333333333"
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": ""
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": "",
+        "clinicName": "Heva"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Dr. Hakan Clinic"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": "not-a-clinic",
+        "clinicName": "Heva Clinic"
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicId": null,
+        "clinicName": "Hakan"
+      },
+      "result": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Dr. Hakan Clinic",
+        "slug": "dr-hakan",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/dr-hakan",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "hairline design"
+          ],
+          "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": null
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "Heva Clinic"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "heva clinic"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "HEVA CLINIC"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "  Heva Clinic  "
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "\tDr. Hakan Clinic\n"
+      },
+      "result": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Dr. Hakan Clinic",
+        "slug": "dr-hakan",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/dr-hakan",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "hairline design"
+          ],
+          "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "Dr. Hakan Clinic"
+      },
+      "result": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Dr. Hakan Clinic",
+        "slug": "dr-hakan",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/dr-hakan",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "hairline design"
+          ],
+          "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "Heva"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "heva"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "Hakan"
+      },
+      "result": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Dr. Hakan Clinic",
+        "slug": "dr-hakan",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/dr-hakan",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "hairline design"
+          ],
+          "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "dr. hakan"
+      },
+      "result": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Dr. Hakan Clinic",
+        "slug": "dr-hakan",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/dr-hakan",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "hairline design"
+          ],
+          "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "Clinic"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "I want Heva Clinic please"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "Dr Hakan"
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "unknown clinic"
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": ""
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "   "
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "\ufeffHeva"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "\u00a0Heva\u00a0"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "\u3000Hakan\u2028"
+      },
+      "result": {
+        "id": "22222222-2222-4222-8222-222222222222",
+        "name": "Dr. Hakan Clinic",
+        "slug": "dr-hakan",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/dr-hakan",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "hairline design"
+          ],
+          "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+        }
+      }
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "\u0085Heva"
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "\u001cHeva"
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "\u200bHeva"
+      },
+      "result": null
+    },
+    {
+      "function": "findClinic",
+      "args": {
+        "clinicName": "Heva",
+        "unknownKey": "ignored"
+      },
+      "result": {
+        "id": "11111111-1111-4111-8111-111111111111",
+        "name": "Heva Clinic",
+        "slug": "heva",
+        "status": "ACTIVE",
+        "url": "https://www.doctours.com/clinic/heva",
+        "address": {
+          "city": "Istanbul",
+          "country": "TR"
+        },
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "ai_context": {
+          "bestFor": [
+            "afro and textured hair",
+            "hairline work"
+          ],
+          "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+        }
+      }
+    },
+    {
+      "function": "getAllClinics",
+      "args": null,
+      "result": {
+        "clinics": [
+          {
+            "id": "11111111-1111-4111-8111-111111111111",
+            "name": "Heva Clinic",
+            "slug": "heva",
+            "status": "ACTIVE",
+            "url": "https://www.doctours.com/clinic/heva",
+            "address": {
+              "city": "Istanbul",
+              "country": "TR"
+            },
+            "clinic_flags": [
+              {
+                "name": "Speciality",
+                "value": "Afro Hair"
+              },
+              {
+                "name": "Practice type",
+                "value": "Doctor-assisted"
+              }
+            ],
+            "ai_context": {
+              "bestFor": [
+                "afro and textured hair",
+                "hairline work"
+              ],
+              "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+            }
+          },
+          {
+            "id": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan Clinic",
+            "slug": "dr-hakan",
+            "status": "ACTIVE",
+            "url": "https://www.doctours.com/clinic/dr-hakan",
+            "address": {
+              "city": "Istanbul",
+              "country": "TR"
+            },
+            "clinic_flags": [
+              {
+                "name": "Speciality",
+                "value": "Hair Transplant"
+              },
+              {
+                "name": "Practice type",
+                "value": "Doctor-performed hairline"
+              }
+            ],
+            "ai_context": {
+              "bestFor": [
+                "hairline design"
+              ],
+              "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "function": "getAllClinics",
+      "args": {},
+      "result": {
+        "clinics": [
+          {
+            "id": "11111111-1111-4111-8111-111111111111",
+            "name": "Heva Clinic",
+            "slug": "heva",
+            "status": "ACTIVE",
+            "url": "https://www.doctours.com/clinic/heva",
+            "address": {
+              "city": "Istanbul",
+              "country": "TR"
+            },
+            "clinic_flags": [
+              {
+                "name": "Speciality",
+                "value": "Afro Hair"
+              },
+              {
+                "name": "Practice type",
+                "value": "Doctor-assisted"
+              }
+            ],
+            "ai_context": {
+              "bestFor": [
+                "afro and textured hair",
+                "hairline work"
+              ],
+              "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+            }
+          },
+          {
+            "id": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan Clinic",
+            "slug": "dr-hakan",
+            "status": "ACTIVE",
+            "url": "https://www.doctours.com/clinic/dr-hakan",
+            "address": {
+              "city": "Istanbul",
+              "country": "TR"
+            },
+            "clinic_flags": [
+              {
+                "name": "Speciality",
+                "value": "Hair Transplant"
+              },
+              {
+                "name": "Practice type",
+                "value": "Doctor-performed hairline"
+              }
+            ],
+            "ai_context": {
+              "bestFor": [
+                "hairline design"
+              ],
+              "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "function": "getAllClinics",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "clinics": [
+          {
+            "id": "11111111-1111-4111-8111-111111111111",
+            "name": "Heva Clinic",
+            "slug": "heva",
+            "status": "ACTIVE",
+            "url": "https://www.doctours.com/clinic/heva",
+            "address": {
+              "city": "Istanbul",
+              "country": "TR"
+            },
+            "clinic_flags": [
+              {
+                "name": "Speciality",
+                "value": "Afro Hair"
+              },
+              {
+                "name": "Practice type",
+                "value": "Doctor-assisted"
+              }
+            ],
+            "ai_context": {
+              "bestFor": [
+                "afro and textured hair",
+                "hairline work"
+              ],
+              "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+            }
+          },
+          {
+            "id": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan Clinic",
+            "slug": "dr-hakan",
+            "status": "ACTIVE",
+            "url": "https://www.doctours.com/clinic/dr-hakan",
+            "address": {
+              "city": "Istanbul",
+              "country": "TR"
+            },
+            "clinic_flags": [
+              {
+                "name": "Speciality",
+                "value": "Hair Transplant"
+              },
+              {
+                "name": "Practice type",
+                "value": "Doctor-performed hairline"
+              }
+            ],
+            "ai_context": {
+              "bestFor": [
+                "hairline design"
+              ],
+              "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {},
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": "11111111-1111-4111-8111-111111111111"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": "22222222-2222-4222-8222-222222222222"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999992",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": "33333333-3333-4333-8333-333333333333"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": ""
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": "",
+        "clinicName": "Heva"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Dr. Hakan Clinic"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": "not-a-clinic",
+        "clinicName": "Heva Clinic"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicId": null,
+        "clinicName": "Hakan"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999992",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": null
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "Heva Clinic"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "heva clinic"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "HEVA CLINIC"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "  Heva Clinic  "
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "\tDr. Hakan Clinic\n"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999992",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "Dr. Hakan Clinic"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999992",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "Heva"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "heva"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "Hakan"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999992",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "dr. hakan"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999992",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "Clinic"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "I want Heva Clinic please"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "Dr Hakan"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "unknown clinic"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": ""
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "   "
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "\ufeffHeva"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "\u00a0Heva\u00a0"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "\u3000Hakan\u2028"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999992",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Dr. Hakan",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "\u0085Heva"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "\u001cHeva"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "\u200bHeva"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicDoctors",
+      "args": {
+        "clinicName": "Heva",
+        "unknownKey": "ignored"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "doctors": [
+          {
+            "id": "99999999-9999-4999-8999-999999999991",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Dr. Sibel",
+            "title": "Hair transplant surgeon"
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {},
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": "11111111-1111-4111-8111-111111111111"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": "22222222-2222-4222-8222-222222222222"
+      },
+      "result": {
+        "clinicName": "Dr. Hakan Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "55555555-5555-4555-8555-555555555551",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Sapphire",
+            "basePrice": 3200,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": "The doctor draws the hairline.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": "33333333-3333-4333-8333-333333333333"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": ""
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": "",
+        "clinicName": "Heva"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Dr. Hakan Clinic"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": "not-a-clinic",
+        "clinicName": "Heva Clinic"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicId": null,
+        "clinicName": "Hakan"
+      },
+      "result": {
+        "clinicName": "Dr. Hakan Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "55555555-5555-4555-8555-555555555551",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Sapphire",
+            "basePrice": 3200,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": "The doctor draws the hairline.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": null
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "Heva Clinic"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "heva clinic"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "HEVA CLINIC"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "  Heva Clinic  "
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "\tDr. Hakan Clinic\n"
+      },
+      "result": {
+        "clinicName": "Dr. Hakan Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "55555555-5555-4555-8555-555555555551",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Sapphire",
+            "basePrice": 3200,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": "The doctor draws the hairline.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "Dr. Hakan Clinic"
+      },
+      "result": {
+        "clinicName": "Dr. Hakan Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "55555555-5555-4555-8555-555555555551",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Sapphire",
+            "basePrice": 3200,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": "The doctor draws the hairline.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "Heva"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "heva"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "Hakan"
+      },
+      "result": {
+        "clinicName": "Dr. Hakan Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "55555555-5555-4555-8555-555555555551",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Sapphire",
+            "basePrice": 3200,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": "The doctor draws the hairline.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "dr. hakan"
+      },
+      "result": {
+        "clinicName": "Dr. Hakan Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "55555555-5555-4555-8555-555555555551",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Sapphire",
+            "basePrice": 3200,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": "The doctor draws the hairline.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "Clinic"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "I want Heva Clinic please"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "Dr Hakan"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "unknown clinic"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": ""
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "   "
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "\ufeffHeva"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "\u00a0Heva\u00a0"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "\u3000Hakan\u2028"
+      },
+      "result": {
+        "clinicName": "Dr. Hakan Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Hair Transplant"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-performed hairline"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "55555555-5555-4555-8555-555555555551",
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "name": "Sapphire",
+            "basePrice": 3200,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": "The doctor draws the hairline.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "\u0085Heva"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "\u001cHeva"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "\u200bHeva"
+      },
+      "result": null
+    },
+    {
+      "function": "getClinicPackages",
+      "args": {
+        "clinicName": "Heva",
+        "unknownKey": "ignored"
+      },
+      "result": {
+        "clinicName": "Heva Clinic",
+        "clinic_flags": [
+          {
+            "name": "Speciality",
+            "value": "Afro Hair"
+          },
+          {
+            "name": "Practice type",
+            "value": "Doctor-assisted"
+          }
+        ],
+        "currency": "USD",
+        "packages": [
+          {
+            "id": "44444444-4444-4444-8444-444444444441",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Silver",
+            "basePrice": 3000,
+            "depositAmount": 500,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "THU",
+              "FRI"
+            ],
+            "aiContext": null,
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 3,
+                "unitDescription": "night"
+              }
+            ]
+          },
+          {
+            "id": "44444444-4444-4444-8444-444444444442",
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "name": "Gold",
+            "basePrice": 4500,
+            "depositAmount": 600,
+            "currency": "USD",
+            "chargedPer": "FLAT",
+            "bookableWeekdays": [
+              "MON",
+              "TUE",
+              "WED",
+              "THU",
+              "FRI",
+              "SAT"
+            ],
+            "aiContext": "The doctor makes every incision and extracts every graft.",
+            "includedAddons": [
+              {
+                "name": "Hotel",
+                "includedQuantity": 4,
+                "unitDescription": "night"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "function": "getConsultationRescheduleLink",
+      "args": {},
+      "result": {
+        "consultationTime": null,
+        "reason": "no_consultation_on_file",
+        "status": "no_consultation",
+        "url": null
+      }
+    },
+    {
+      "function": "getConsultationRescheduleLink",
+      "args": {
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      },
+      "result": {
+        "consultationTime": null,
+        "reason": "no_consultation_on_file",
+        "status": "no_consultation",
+        "url": null
+      }
+    },
+    {
+      "function": "getConsultationRescheduleLink",
+      "args": {
+        "userId": "someone-else"
+      },
+      "result": {
+        "consultationTime": null,
+        "reason": "no_consultation_on_file",
+        "status": "no_consultation",
+        "url": null
+      }
+    },
+    {
+      "function": "getConsultationRescheduleLink",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "consultationTime": null,
+        "reason": "no_consultation_on_file",
+        "status": "no_consultation",
+        "url": null
+      }
+    },
+    {
+      "function": "getFullCalls",
+      "args": {},
+      "result": {
+        "calls": [
+          {
+            "createdAt": "2026-09-18T15:00:00.000Z",
+            "direction": "outbound",
+            "duration": 1320,
+            "id": "66666666-6666-4666-8666-666666666666",
+            "recordingUrl": null,
+            "result": "completed",
+            "summary": "Free consultation. Jordan wants a hairline procedure, mentioned 4C curls, and is comparing Istanbul clinics. Photos were requested after the call.",
+            "transcript": "Alex: Thanks for hopping on. Jordan: I want to fix my hairline. My hair is 4C. Alex: We will need photos next, then the medical team builds the assessment."
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "function": "getFullCalls",
+      "args": {
+        "chatId": "chat-1",
+        "limit": 0
+      },
+      "result": {
+        "calls": [
+          {
+            "createdAt": "2026-09-18T15:00:00.000Z",
+            "direction": "outbound",
+            "duration": 1320,
+            "id": "66666666-6666-4666-8666-666666666666",
+            "recordingUrl": null,
+            "result": "completed",
+            "summary": "Free consultation. Jordan wants a hairline procedure, mentioned 4C curls, and is comparing Istanbul clinics. Photos were requested after the call.",
+            "transcript": "Alex: Thanks for hopping on. Jordan: I want to fix my hairline. My hair is 4C. Alex: We will need photos next, then the medical team builds the assessment."
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "function": "getFullCalls",
+      "args": {
+        "limit": 5
+      },
+      "result": {
+        "calls": [
+          {
+            "createdAt": "2026-09-18T15:00:00.000Z",
+            "direction": "outbound",
+            "duration": 1320,
+            "id": "66666666-6666-4666-8666-666666666666",
+            "recordingUrl": null,
+            "result": "completed",
+            "summary": "Free consultation. Jordan wants a hairline procedure, mentioned 4C curls, and is comparing Istanbul clinics. Photos were requested after the call.",
+            "transcript": "Alex: Thanks for hopping on. Jordan: I want to fix my hairline. My hair is 4C. Alex: We will need photos next, then the medical team builds the assessment."
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "function": "getFullCalls",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "calls": [
+          {
+            "createdAt": "2026-09-18T15:00:00.000Z",
+            "direction": "outbound",
+            "duration": 1320,
+            "id": "66666666-6666-4666-8666-666666666666",
+            "recordingUrl": null,
+            "result": "completed",
+            "summary": "Free consultation. Jordan wants a hairline procedure, mentioned 4C curls, and is comparing Istanbul clinics. Photos were requested after the call.",
+            "transcript": "Alex: Thanks for hopping on. Jordan: I want to fix my hairline. My hair is 4C. Alex: We will need photos next, then the medical team builds the assessment."
+          }
+        ],
+        "count": 1
+      }
+    },
+    {
+      "function": "getLatestAssessment",
+      "args": {},
+      "result": {
+        "assessmentUrl": "https://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333",
+        "graftRange": {
+          "high": 3200,
+          "low": 2500
+        },
+        "hasAssessment": true,
+        "hasHairlineDrawing": true,
+        "shareStatus": "available",
+        "version": 1
+      }
+    },
+    {
+      "function": "getLatestAssessment",
+      "args": {
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      },
+      "result": {
+        "assessmentUrl": "https://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333",
+        "graftRange": {
+          "high": 3200,
+          "low": 2500
+        },
+        "hasAssessment": true,
+        "hasHairlineDrawing": true,
+        "shareStatus": "available",
+        "version": 1
+      }
+    },
+    {
+      "function": "getLatestAssessment",
+      "args": {
+        "userId": "someone-else"
+      },
+      "result": {
+        "assessmentUrl": "https://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333",
+        "graftRange": {
+          "high": 3200,
+          "low": 2500
+        },
+        "hasAssessment": true,
+        "hasHairlineDrawing": true,
+        "shareStatus": "available",
+        "version": 1
+      }
+    },
+    {
+      "function": "getLatestAssessment",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "assessmentUrl": "https://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333",
+        "graftRange": {
+          "high": 3200,
+          "low": 2500
+        },
+        "hasAssessment": true,
+        "hasHairlineDrawing": true,
+        "shareStatus": "available",
+        "version": 1
+      }
+    },
+    {
+      "function": "getPatientContext",
+      "args": {},
+      "result": {
+        "clinicSelectionPreferences": {
+          "budgetMax": null,
+          "excludedDestinations": null,
+          "preferredDestinations": null,
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": null,
+          "softPackageInterestIds": null
+        },
+        "consultationTime": null,
+        "email": "jordan.hale@example.invalid",
+        "name": "Jordan Hale",
+        "phone": "+15555550123",
+        "pipelineStatus": "PRE_CLINICAL_SENT",
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        }
+      }
+    },
+    {
+      "function": "getPatientContext",
+      "args": {
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      },
+      "result": {
+        "clinicSelectionPreferences": {
+          "budgetMax": null,
+          "excludedDestinations": null,
+          "preferredDestinations": null,
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": null,
+          "softPackageInterestIds": null
+        },
+        "consultationTime": null,
+        "email": "jordan.hale@example.invalid",
+        "name": "Jordan Hale",
+        "phone": "+15555550123",
+        "pipelineStatus": "PRE_CLINICAL_SENT",
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        }
+      }
+    },
+    {
+      "function": "getPatientContext",
+      "args": {
+        "userId": "someone-else"
+      },
+      "result": {
+        "clinicSelectionPreferences": {
+          "budgetMax": null,
+          "excludedDestinations": null,
+          "preferredDestinations": null,
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": null,
+          "softPackageInterestIds": null
+        },
+        "consultationTime": null,
+        "email": "jordan.hale@example.invalid",
+        "name": "Jordan Hale",
+        "phone": "+15555550123",
+        "pipelineStatus": "PRE_CLINICAL_SENT",
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        }
+      }
+    },
+    {
+      "function": "getPatientContext",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "clinicSelectionPreferences": {
+          "budgetMax": null,
+          "excludedDestinations": null,
+          "preferredDestinations": null,
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": null,
+          "softPackageInterestIds": null
+        },
+        "consultationTime": null,
+        "email": "jordan.hale@example.invalid",
+        "name": "Jordan Hale",
+        "phone": "+15555550123",
+        "pipelineStatus": "PRE_CLINICAL_SENT",
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        }
+      }
+    },
+    {
+      "function": "getPatientImages",
+      "args": {},
+      "result": {
+        "allAnglesUploaded": true,
+        "angles": {
+          "front": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/front.jpg"
+            ]
+          },
+          "top": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/top.jpg"
+            ]
+          },
+          "left": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/left.jpg"
+            ]
+          },
+          "right": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/right.jpg"
+            ]
+          },
+          "back": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/back.jpg"
+            ]
+          }
+        },
+        "hasImages": true,
+        "imageCount": 5,
+        "missingAngles": [],
+        "uploadedAngles": [
+          "front",
+          "top",
+          "left",
+          "right",
+          "back"
+        ]
+      }
+    },
+    {
+      "function": "getPatientImages",
+      "args": {
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      },
+      "result": {
+        "allAnglesUploaded": true,
+        "angles": {
+          "front": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/front.jpg"
+            ]
+          },
+          "top": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/top.jpg"
+            ]
+          },
+          "left": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/left.jpg"
+            ]
+          },
+          "right": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/right.jpg"
+            ]
+          },
+          "back": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/back.jpg"
+            ]
+          }
+        },
+        "hasImages": true,
+        "imageCount": 5,
+        "missingAngles": [],
+        "uploadedAngles": [
+          "front",
+          "top",
+          "left",
+          "right",
+          "back"
+        ]
+      }
+    },
+    {
+      "function": "getPatientImages",
+      "args": {
+        "userId": "someone-else"
+      },
+      "result": {
+        "allAnglesUploaded": true,
+        "angles": {
+          "front": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/front.jpg"
+            ]
+          },
+          "top": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/top.jpg"
+            ]
+          },
+          "left": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/left.jpg"
+            ]
+          },
+          "right": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/right.jpg"
+            ]
+          },
+          "back": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/back.jpg"
+            ]
+          }
+        },
+        "hasImages": true,
+        "imageCount": 5,
+        "missingAngles": [],
+        "uploadedAngles": [
+          "front",
+          "top",
+          "left",
+          "right",
+          "back"
+        ]
+      }
+    },
+    {
+      "function": "getPatientImages",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "allAnglesUploaded": true,
+        "angles": {
+          "front": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/front.jpg"
+            ]
+          },
+          "top": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/top.jpg"
+            ]
+          },
+          "left": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/left.jpg"
+            ]
+          },
+          "right": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/right.jpg"
+            ]
+          },
+          "back": {
+            "uploaded": true,
+            "urls": [
+              "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/back.jpg"
+            ]
+          }
+        },
+        "hasImages": true,
+        "imageCount": 5,
+        "missingAngles": [],
+        "uploadedAngles": [
+          "front",
+          "top",
+          "left",
+          "right",
+          "back"
+        ]
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {},
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441",
+        "clinicPackageName": "Silver",
+        "linkType": "payment",
+        "reason": null,
+        "status": "ready",
+        "url": "https://www.doctours.com/payment/44444444-4444-4444-8444-444444444441"
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444442"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444442",
+        "clinicPackageName": "Gold",
+        "linkType": "payment",
+        "reason": null,
+        "status": "ready",
+        "url": "https://www.doctours.com/payment/44444444-4444-4444-8444-444444444442"
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment",
+        "clinicPackageId": "55555555-5555-4555-8555-555555555551"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "clinicPackageId": "55555555-5555-4555-8555-555555555551",
+        "clinicPackageName": "Sapphire",
+        "linkType": "payment",
+        "reason": null,
+        "status": "ready",
+        "url": "https://www.doctours.com/payment/55555555-5555-4555-8555-555555555551"
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441",
+        "clinicId": "22222222-2222-4222-8222-222222222222"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441",
+        "clinicPackageName": "Silver",
+        "linkType": "payment",
+        "reason": null,
+        "status": "ready",
+        "url": "https://www.doctours.com/payment/44444444-4444-4444-8444-444444444441"
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment",
+        "clinicPackageId": "not-a-package"
+      },
+      "result": {
+        "clinicId": null,
+        "clinicName": null,
+        "clinicPackageId": null,
+        "clinicPackageName": null,
+        "linkType": "payment",
+        "reason": "missing_or_malformed_clinic_package_id",
+        "status": "missing_input",
+        "url": null
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment"
+      },
+      "result": {
+        "clinicId": null,
+        "clinicName": null,
+        "clinicPackageId": null,
+        "clinicPackageName": null,
+        "linkType": "payment",
+        "reason": "missing_or_malformed_clinic_package_id",
+        "status": "missing_input",
+        "url": null
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment",
+        "clinicPackageId": null
+      },
+      "result": {
+        "clinicId": null,
+        "clinicName": null,
+        "clinicPackageId": null,
+        "clinicPackageName": null,
+        "linkType": "payment",
+        "reason": "missing_or_malformed_clinic_package_id",
+        "status": "missing_input",
+        "url": null
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "checkout",
+        "clinicId": "11111111-1111-4111-8111-111111111111"
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "clinicPackageId": null,
+        "clinicPackageName": null,
+        "linkType": "checkout",
+        "reason": null,
+        "status": "ready",
+        "url": "https://www.doctours.com/clinic/heva/checkout"
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "checkout",
+        "clinicId": "22222222-2222-4222-8222-222222222222"
+      },
+      "result": {
+        "clinicId": "22222222-2222-4222-8222-222222222222",
+        "clinicName": "Dr. Hakan Clinic",
+        "clinicPackageId": null,
+        "clinicPackageName": null,
+        "linkType": "checkout",
+        "reason": null,
+        "status": "ready",
+        "url": "https://www.doctours.com/clinic/dr-hakan/checkout"
+      }
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "checkout",
+        "clinicId": "not-a-clinic"
+      },
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "checkout"
+      },
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "checkout",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441"
+      },
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "Payment",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441"
+      },
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "deposit",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441"
+      },
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": null,
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441"
+      },
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "clinicPackageId": "44444444-4444-4444-8444-444444444441"
+      },
+      "result": null
+    },
+    {
+      "function": "getPaymentLink",
+      "args": {
+        "type": "payment",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444442",
+        "unknownKey": true
+      },
+      "result": {
+        "clinicId": "11111111-1111-4111-8111-111111111111",
+        "clinicName": "Heva Clinic",
+        "clinicPackageId": "44444444-4444-4444-8444-444444444442",
+        "clinicPackageName": "Gold",
+        "linkType": "payment",
+        "reason": null,
+        "status": "ready",
+        "url": "https://www.doctours.com/payment/44444444-4444-4444-8444-444444444442"
+      }
+    },
+    {
+      "function": "getSavedClinics",
+      "args": {},
+      "result": {
+        "count": 2,
+        "recommendationStatus": "available",
+        "savedClinics": [
+          {
+            "clinic": {
+              "id": "11111111-1111-4111-8111-111111111111",
+              "name": "Heva Clinic",
+              "slug": "heva",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/heva",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Afro Hair"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-assisted"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "afro and textured hair",
+                  "hairline work"
+                ],
+                "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+              }
+            },
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "id": "77777777-7777-4777-8777-777777777771",
+            "ranking": 1
+          },
+          {
+            "clinic": {
+              "id": "22222222-2222-4222-8222-222222222222",
+              "name": "Dr. Hakan Clinic",
+              "slug": "dr-hakan",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/dr-hakan",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Hair Transplant"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-performed hairline"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "hairline design"
+                ],
+                "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+              }
+            },
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "id": "77777777-7777-4777-8777-777777777772",
+            "ranking": 2
+          }
+        ]
+      }
+    },
+    {
+      "function": "getSavedClinics",
+      "args": {
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      },
+      "result": {
+        "count": 2,
+        "recommendationStatus": "available",
+        "savedClinics": [
+          {
+            "clinic": {
+              "id": "11111111-1111-4111-8111-111111111111",
+              "name": "Heva Clinic",
+              "slug": "heva",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/heva",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Afro Hair"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-assisted"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "afro and textured hair",
+                  "hairline work"
+                ],
+                "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+              }
+            },
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "id": "77777777-7777-4777-8777-777777777771",
+            "ranking": 1
+          },
+          {
+            "clinic": {
+              "id": "22222222-2222-4222-8222-222222222222",
+              "name": "Dr. Hakan Clinic",
+              "slug": "dr-hakan",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/dr-hakan",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Hair Transplant"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-performed hairline"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "hairline design"
+                ],
+                "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+              }
+            },
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "id": "77777777-7777-4777-8777-777777777772",
+            "ranking": 2
+          }
+        ]
+      }
+    },
+    {
+      "function": "getSavedClinics",
+      "args": {
+        "userId": "someone-else"
+      },
+      "result": {
+        "count": 2,
+        "recommendationStatus": "available",
+        "savedClinics": [
+          {
+            "clinic": {
+              "id": "11111111-1111-4111-8111-111111111111",
+              "name": "Heva Clinic",
+              "slug": "heva",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/heva",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Afro Hair"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-assisted"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "afro and textured hair",
+                  "hairline work"
+                ],
+                "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+              }
+            },
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "id": "77777777-7777-4777-8777-777777777771",
+            "ranking": 1
+          },
+          {
+            "clinic": {
+              "id": "22222222-2222-4222-8222-222222222222",
+              "name": "Dr. Hakan Clinic",
+              "slug": "dr-hakan",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/dr-hakan",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Hair Transplant"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-performed hairline"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "hairline design"
+                ],
+                "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+              }
+            },
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "id": "77777777-7777-4777-8777-777777777772",
+            "ranking": 2
+          }
+        ]
+      }
+    },
+    {
+      "function": "getSavedClinics",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "count": 2,
+        "recommendationStatus": "available",
+        "savedClinics": [
+          {
+            "clinic": {
+              "id": "11111111-1111-4111-8111-111111111111",
+              "name": "Heva Clinic",
+              "slug": "heva",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/heva",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Afro Hair"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-assisted"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "afro and textured hair",
+                  "hairline work"
+                ],
+                "patientFacingSummary": "Istanbul clinic for afro and textured hair."
+              }
+            },
+            "clinicId": "11111111-1111-4111-8111-111111111111",
+            "id": "77777777-7777-4777-8777-777777777771",
+            "ranking": 1
+          },
+          {
+            "clinic": {
+              "id": "22222222-2222-4222-8222-222222222222",
+              "name": "Dr. Hakan Clinic",
+              "slug": "dr-hakan",
+              "status": "ACTIVE",
+              "url": "https://www.doctours.com/clinic/dr-hakan",
+              "address": {
+                "city": "Istanbul",
+                "country": "TR"
+              },
+              "clinic_flags": [
+                {
+                  "name": "Speciality",
+                  "value": "Hair Transplant"
+                },
+                {
+                  "name": "Practice type",
+                  "value": "Doctor-performed hairline"
+                }
+              ],
+              "ai_context": {
+                "bestFor": [
+                  "hairline design"
+                ],
+                "patientFacingSummary": "Istanbul clinic where the doctor draws the hairline."
+              }
+            },
+            "clinicId": "22222222-2222-4222-8222-222222222222",
+            "id": "77777777-7777-4777-8777-777777777772",
+            "ranking": 2
+          }
+        ]
+      }
+    },
+    {
+      "function": "issuePromoCode",
+      "args": {},
+      "result": {
+        "amount": null,
+        "code": null,
+        "endsAt": null,
+        "needs": null,
+        "paymentUrl": null,
+        "reason": "patient_not_on_sent_out_list",
+        "status": "not_on_list"
+      }
+    },
+    {
+      "function": "issuePromoCode",
+      "args": {
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      },
+      "result": {
+        "amount": null,
+        "code": null,
+        "endsAt": null,
+        "needs": null,
+        "paymentUrl": null,
+        "reason": "patient_not_on_sent_out_list",
+        "status": "not_on_list"
+      }
+    },
+    {
+      "function": "issuePromoCode",
+      "args": {
+        "userId": "someone-else"
+      },
+      "result": {
+        "amount": null,
+        "code": null,
+        "endsAt": null,
+        "needs": null,
+        "paymentUrl": null,
+        "reason": "patient_not_on_sent_out_list",
+        "status": "not_on_list"
+      }
+    },
+    {
+      "function": "issuePromoCode",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "amount": null,
+        "code": null,
+        "endsAt": null,
+        "needs": null,
+        "paymentUrl": null,
+        "reason": "patient_not_on_sent_out_list",
+        "status": "not_on_list"
+      }
+    },
+    {
+      "function": "updateUser",
+      "args": {},
+      "result": {
+        "firstName": "Jordan",
+        "lastName": "Hale",
+        "reason": "name_already_set",
+        "updated": false
+      }
+    },
+    {
+      "function": "updateUser",
+      "args": {
+        "firstName": "Jordan",
+        "lastName": "Hale"
+      },
+      "result": {
+        "firstName": "Jordan",
+        "lastName": "Hale",
+        "reason": "name_already_set",
+        "updated": false
+      }
+    },
+    {
+      "function": "updateUser",
+      "args": {
+        "firstName": "Sam",
+        "userId": "someone-else"
+      },
+      "result": {
+        "firstName": "Jordan",
+        "lastName": "Hale",
+        "reason": "name_already_set",
+        "updated": false
+      }
+    },
+    {
+      "function": "updateUser",
+      "args": {
+        "unknownKey": 1
+      },
+      "result": {
+        "firstName": "Jordan",
+        "lastName": "Hale",
+        "reason": "name_already_set",
+        "updated": false
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {},
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {}
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": null
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": "11111111-1111-4111-8111-111111111111"
+        }
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": "11111111-1111-4111-8111-111111111111",
+          "selectedPackageId": null,
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedPackageId": "44444444-4444-4444-8444-444444444442"
+        }
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": null,
+          "selectedPackageId": "44444444-4444-4444-8444-444444444442",
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": "11111111-1111-4111-8111-111111111111",
+          "selectedPackageId": "44444444-4444-4444-8444-444444444442"
+        }
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": "11111111-1111-4111-8111-111111111111",
+          "selectedPackageId": "44444444-4444-4444-8444-444444444442",
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": "22222222-2222-4222-8222-222222222222",
+          "selectedPackageId": "44444444-4444-4444-8444-444444444441"
+        }
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": "22222222-2222-4222-8222-222222222222",
+          "selectedPackageId": "44444444-4444-4444-8444-444444444441",
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": "not-a-clinic"
+        }
+      },
+      "result": null
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedPackageId": "not-a-package"
+        }
+      },
+      "result": null
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": "11111111-1111-4111-8111-111111111111",
+          "selectedPackageId": "not-a-package"
+        }
+      },
+      "result": null
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": null,
+          "selectedPackageId": null
+        }
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": null,
+          "selectedPackageId": null,
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": ""
+        }
+      },
+      "result": null
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": 123
+        }
+      },
+      "result": null
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "clinicSelection": {
+          "selectedClinicId": "11111111-1111-4111-8111-111111111111",
+          "tentativeProcedureDates": {
+            "text": "May"
+          }
+        }
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": "11111111-1111-4111-8111-111111111111",
+          "selectedPackageId": null,
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateUserClinicPreferences",
+      "args": {
+        "userId": "someone-else",
+        "clinicSelection": {
+          "selectedPackageId": "55555555-5555-4555-8555-555555555551"
+        }
+      },
+      "result": {
+        "clinicSelection": {
+          "budgetMax": null,
+          "excludedDestinations": [],
+          "preferredDestinations": [],
+          "selectedClinicId": null,
+          "selectedPackageId": "55555555-5555-4555-8555-555555555551",
+          "softClinicInterestIds": [],
+          "softPackageInterestIds": []
+        },
+        "dropped": [],
+        "lockedReason": null,
+        "tentativeProcedureDates": {
+          "strength": "medium",
+          "text": "within about 6 months"
+        },
+        "updated": true,
+        "userId": "7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11"
+      }
+    },
+    {
+      "function": "updateWorkingMemory",
+      "args": {},
+      "result": {
+        "success": true
+      }
+    },
+    {
+      "function": "updateWorkingMemory",
+      "args": {
+        "memory": {}
+      },
+      "result": {
+        "success": true
+      }
+    },
+    {
+      "function": "updateWorkingMemory",
+      "args": {
+        "memory": {
+          "patientName": "Jordan"
+        }
+      },
+      "result": {
+        "success": true
+      }
+    }
+  ]
+}
