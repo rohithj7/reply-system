@@ -1,6 +1,6 @@
 # Phase 2 report: monolithic baseline, shared runtime and evaluation runner
 
-Date: 2026-10-03. Last code commit: `55b31dc`. This report is a docs-only commit on top of it.
+Date: 2026-10-03. Last code commit: `828d0ad`, a scorer fix made after the first report commit (section 5). This report is a docs-only commit on top of it.
 
 **All evidence in this report is scripted.** Tests drive the system with `models/scripted.py` and make no network calls. No live model has been called, because no endpoint or model is configured (section 6). No live gate is marked passed.
 
@@ -58,7 +58,7 @@ The five plan corrections are preserved:
 
 ## 2. Checks run
 
-Run locally on 2026-10-03 at `55b31dc` with CPython 3.12.7.
+Run locally on 2026-10-03 at `55b31dc` with CPython 3.12.7. After the scorer fix in `828d0ad`, `pytest -m "not live"` gives `512 passed, 2 deselected`, and lint, format, types, the dry run and the audit pass again.
 
 | Check | Actual output | Result |
 |---|---|---|
@@ -125,11 +125,13 @@ Also not run:
 ## 4. CI
 
 ```text
-$ gh run list --branch main --limit 1 --json headSha,conclusion   # run 37159954054
-[{"conclusion":"success","headSha":"55b31dc5504b6b9840a1b4acd7d6f3fc8edef0b4"}]
-$ git rev-parse HEAD   # before this report commit
-55b31dc5504b6b9840a1b4acd7d6f3fc8edef0b4
+$ gh run list --branch main --limit 1 --json headSha,conclusion   # run 37160378771
+[{"conclusion":"success","headSha":"828d0ad24c191b6897a2c0e351c7237fc4990492"}]
+$ git rev-parse HEAD   # before this report update
+828d0ad24c191b6897a2c0e351c7237fc4990492
 ```
+
+Run 37159954054 also passed on `55b31dc`, and run 37160132778 passed on the first report commit, `ac66de2`.
 
 All CI steps succeeded: Install, Lint, Types, Tests (network-free), Eval suites (dry run, no model calls), Audit tree and history. The CI result for this report commit is checked after it is pushed.
 
@@ -142,6 +144,8 @@ Commits in this phase, after `f70e26a`:
 - `0039292`: held-out v1 freeze.
 - `c4de6d0`: iteration suites.
 - `55b31dc`: CI and docs.
+- `ac66de2`: this report.
+- `828d0ad`: the scorer fix.
 
 ## 5. Deviations and decisions
 
@@ -158,6 +162,11 @@ Commits in this phase, after `f70e26a`:
 - **Argument correctness is part of tool selection.** Expected tool multisets carry clinic and package arguments.
 - **RC-G-10** builds its changed fixture in the test, a modified copy of the tool data, instead of shipping a second resource fixture.
 - **The `eval` command's import exception** (left open in Phase 1). `cli.py` imports `evaluation.cli` lazily, only for `eval`. The import guard allows exactly that import, and a subprocess test shows `run` never loads an evaluation module.
+- **Scorer fix after review of the held-out labels** (`828d0ad`).
+  - String facts used to match as substrings, so "3 night" counted in "13 nights" and "Wed" in "allowed". They now match whole words, with a plural allowed.
+  - `bookableWeekdays` facts accept a day's name or abbreviation, or a stated range such as "Monday through Friday".
+  - `check_case` now verifies weekday labels against the fixture, and all three held-out weekday labels pass.
+  - The frozen set and its hash are unchanged, and the fix came before any held-out run.
 - **Provider checks for the modular steps** (route, decide) move to Phase 3, where those steps exist.
 
 ## 6. Open questions and blockers
