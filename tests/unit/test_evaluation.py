@@ -17,7 +17,13 @@ from doctours_reply.evaluation.schedule import (
     summary_problems,
 )
 from doctours_reply.evaluation.scorer import has_fact, official_checks, score_case, tool_selection
-from doctours_reply.evaluation.stats import percentile, wilson
+from doctours_reply.evaluation.stats import (
+    case_bootstrap,
+    mcnemar_exact,
+    paired_difference,
+    percentile,
+    wilson,
+)
 from doctours_reply.models.scripted import ScriptedModelClient, text_response, tool_response
 from doctours_reply.runtime.executor import Executor
 from doctours_reply.runtime.pipeline import RunInfo, run_item
@@ -200,6 +206,21 @@ def test_statistics() -> None:
     assert percentile([], 95) == 0.0
 
 
+def test_case_level_statistics() -> None:
+    assert mcnemar_exact(0, 0) == 1.0
+    assert mcnemar_exact(0, 6) == pytest.approx(0.03125)
+    assert mcnemar_exact(3, 3) == 1.0
+    assert case_bootstrap([(3, 3)] * 10) == (1.0, 1.0)
+    low, high = case_bootstrap([(3, 3)] * 5 + [(0, 3)] * 5)
+    assert low < 0.5 < high
+    same = {f"c{i}": (i % 2, 1) for i in range(20)}
+    assert paired_difference(same, same) == {"difference": 0.0, "ci95": [0.0, 0.0], "cases": 20}
+    better = {case: (1, 1) for case in same}
+    difference = paired_difference(same, better)
+    assert difference is not None and difference["difference"] == 0.5
+    assert paired_difference(same, {"other": (1, 1)}) is None
+
+
 @pytest.fixture
 def log(tmp_path: Path) -> Path:
     path = tmp_path / "heldout-log.md"
@@ -311,3 +332,24 @@ def test_eval_runs_offline_on_a_scripted_model_and_writes_a_report(
     assert len(lines) == 48
     assert (report_dir / "summary.md").read_text().startswith("# Evaluation summary")
     assert ENV["MODEL_API_KEY"] not in (report_dir / "report.json").read_text()
+
+
+def test_eval_pairs_the_two_systems_by_case(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    for name, value in ENV.items():
+        monkeypatch.setenv(name, value)
+    client = ScriptedModelClient(lambda request: text_response(reply_json("Happy to help.")))
+    monkeypatch.setattr(eval_cli, "OpenAICompatClient", lambda settings: client)
+    report_dir = tmp_path / "report"
+    args = ["--system", "baseline,modular", "--suite", "regression", "--runs", "2"]
+    assert eval_cli.main([*args, "--report", str(report_dir)]) == 0
+    report = json.loads((report_dir / "report.json").read_text())
+    modular = report["systems"]["modular"]
+    assert modular["controller_failure"]["rate"] == 1.0
+    assert modular["escalation_correct"]["cases"] == 19
+    assert "ci95_cases" in modular["escalation_correct"]
+    assert "human_requested" in modular["missed_escalation_by_class"]
+    comparison = report["modular_minus_baseline"]
+    assert comparison["missed_escalation"]["cases"] == 10
+    assert comparison["unnecessary_escalation"]["difference"] == 1.0

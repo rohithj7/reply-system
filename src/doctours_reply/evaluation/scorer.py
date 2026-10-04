@@ -64,9 +64,23 @@ class CaseScore:
     official: dict[str, bool] | None = None
     cached_prompt_tokens: int = 0
     judge: dict[str, Any] | None = None
+    escalation_code: str | None = None
+    json_repairs: int = 0
+    tool_not_loaded: int = 0
+    skill_loads: int = 0
+    end_to_end_ms: int = 0
+    """Wall time for the item; `latency_ms` sums model calls only."""
 
     def to_json(self) -> dict[str, Any]:
         return asdict(self)
+
+    @property
+    def required_hit(self) -> int:
+        return self.required_facts_hit + self.urls_required_hit
+
+    @property
+    def required_total(self) -> int:
+        return self.required_facts_total + self.urls_required_total
 
 
 def score_case(
@@ -117,6 +131,11 @@ def score_case(
         latency_ms=sum(call.latency_ms for call in trace.model_calls),
         official=official_checks(case.text, reply, expected, fixture) if expected else None,
         cached_prompt_tokens=sum(call.cached_prompt_tokens for call in trace.model_calls),
+        escalation_code=outcome.escalation.code if outcome and outcome.escalation else None,
+        json_repairs=purposes.count("json_repair"),
+        tool_not_loaded=sum(o.status == "tool_not_loaded" for o in trace.observations),
+        skill_loads=sum(d["decision"].get("next") == "load_skills" for d in trace.decisions),
+        end_to_end_ms=trace.latency_ms,
     )
 
 
