@@ -1,4 +1,5 @@
-"""Evidence for checking a reply: the fact table and the allowed URLs (decision record 0002).
+"""Evidence for checking a reply: the fact table, the allowed URLs and the ready payment links
+(decision record 0002).
 
 Facts come from tool results executed this turn, plus static facts declared by the
 loaded policy text. Response URLs may come from tool results, declared static links,
@@ -37,6 +38,15 @@ class Fact:
 
 
 @dataclass(frozen=True)
+class PaymentLink:
+    url: str
+    package_name: str
+    selected: bool
+    """The package is the patient's selection: saved this turn, else already saved."""
+    source_ref: str
+
+
+@dataclass(frozen=True)
 class Evidence:
     facts: tuple[Fact, ...]
     response_urls: frozenset[str]
@@ -44,6 +54,8 @@ class Evidence:
     clinic_names: Mapping[str, str]
     numbers: frozenset[Decimal]
     """Every number shown to the model or returned by a tool this turn."""
+    payment_links: tuple[PaymentLink, ...]
+    """Ready payment links returned by a tool this turn."""
 
     def packages(self) -> dict[str, list[Fact]]:
         grouped: dict[str, list[Fact]] = {}
@@ -70,6 +82,8 @@ def build_evidence(
     facts: list[Fact] = list(static_facts)
     tool_urls: set[str] = set()
     pages: set[str] = set()
+    links: list[tuple[Mapping[str, Any], str]] = []
+    written = saved = None
     for observation in executed:
         source = f"{observation.tool}#{observation.call_id}"
         for record in _records(observation.result):
@@ -79,7 +93,14 @@ def build_evidence(
         for record in _records(observation.result):
             if "basePrice" in record and "name" in record and "id" in record:
                 facts.extend(_package_facts(record, clinic_names, source))
+            if record.get("linkType") == "payment" and record.get("status") == "ready":
+                links.append((record, source))
+            if record.get("selectedPackageId") and observation.kind == "write":
+                written = record["selectedPackageId"]
+            elif record.get("selectedPackageId"):
+                saved = record["selectedPackageId"]
         tool_urls.update(urls_in(json.dumps(observation.result, ensure_ascii=False)))
+    selected = written or saved
     shown = " ".join([shown_text, *(json.dumps(o.result) for o in executed)])
     numbers = {parse_number(n) for n in _NUMBER.findall(shown)}
     numbers.update(f.value for f in facts)
@@ -89,6 +110,15 @@ def build_evidence(
         attachment_urls=frozenset(tool_urls),
         clinic_names=clinic_names,
         numbers=frozenset(numbers),
+        payment_links=tuple(
+            PaymentLink(
+                link["url"],
+                link["clinicPackageName"],
+                link["clinicPackageId"] == selected,
+                source,
+            )
+            for link, source in links
+        ),
     )
 
 

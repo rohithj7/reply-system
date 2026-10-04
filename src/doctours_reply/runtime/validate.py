@@ -35,6 +35,7 @@ def check_answer(draft: Draft, evidence: Evidence, message: RedactedText) -> lis
             Violation("markdown", "Use plain text: no bold, italics, headers or list markers.")
         )
     violations += _url_violations(response, draft.attachmentUrls or [], evidence)
+    violations += _missing_links(response, evidence, message.text)
     violations += check_grounding(response, evidence, message.text)
     violations += _memory_violations(draft.workingMemoryUpdates)
     memory_text = draft.workingMemoryUpdates.model_dump_json() if draft.workingMemoryUpdates else ""
@@ -133,6 +134,26 @@ def _url_violations(
             Violation("payment_and_checkout", "Send one link: a payment link or a checkout link.")
         )
     return violations
+
+
+def _missing_links(response: str, evidence: Evidence, message: str) -> list[Violation]:
+    """A ready payment link for the patient's one package goes in the reply. That package is
+    their selection or the one they named, provided the message names no other package."""
+    names = {*evidence.packages(), *(link.package_name for link in evidence.payment_links)}
+    named = {n for n in names if re.search(rf"\b{re.escape(n)}\b", message, re.IGNORECASE)}
+    sent = set(urls_in(response))
+    return [
+        Violation(
+            "missing_link",
+            f"The patient has decided on {link.package_name} and its payment link is ready: "
+            f"paste {link.url} exactly, alone on the last line.",
+            source_ref=link.source_ref,
+        )
+        for link in evidence.payment_links
+        if link.url not in sent
+        and named <= {link.package_name}
+        and (link.selected or link.package_name in named)
+    ]
 
 
 def _only_url(line: str) -> bool:

@@ -1,12 +1,13 @@
 from typing import Any
 
 import pytest
-from support import GOLD_PAYMENT_URL, HEVA_ID
+from support import GOLD_ID, GOLD_PAYMENT_URL, HEVA_ID
 
 from doctours_reply.baseline.monolithic import LEGACY_STATIC_LINKS
 from doctours_reply.contract.reply import WorkingMemoryUpdates
 from doctours_reply.runtime.evidence import Evidence, build_evidence
 from doctours_reply.runtime.executor import Executor
+from doctours_reply.runtime.observation import Observation
 from doctours_reply.runtime.outcome import Draft
 from doctours_reply.runtime.payment_data import redact_card_data
 from doctours_reply.runtime.refs import Fixture
@@ -16,6 +17,7 @@ from doctours_reply.runtime.validate import (
     check_escalation_sentence,
 )
 
+ASSESSMENT_URL = "https://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333"
 CHECKOUT_URL = "https://www.doctours.com/clinic/heva/checkout"
 IMAGE_URL = "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/front.jpg"
 
@@ -73,6 +75,58 @@ def _codes(draft: Draft, evidence: Evidence, message: str = "hi") -> list[str]:
 )
 def test_reply_checks(response: str, codes: list[str], evidence: Evidence) -> None:
     assert _codes(_draft(response), evidence) == codes
+
+
+@pytest.mark.parametrize(
+    ("message", "selection", "response", "codes"),
+    [
+        (
+            "Ready to book Gold, send the link",
+            "",
+            f"Your assessment.\n{ASSESSMENT_URL}",
+            ["missing_link"],
+        ),
+        ("ready to book gold", "", "Great choice, the link is below.", ["missing_link"]),
+        ("Yes, book it", "write", "Saved Heva Gold for you.", ["missing_link"]),
+        ("What's next?", "saved", f"Your assessment.\n{ASSESSMENT_URL}", ["missing_link"]),
+        ("Ready to book Gold", "", f"Here is the Gold link.\n{GOLD_PAYMENT_URL}", []),
+        ("Yes, book it", "write", f"Saved.\n{ASSESSMENT_URL}\n{GOLD_PAYMENT_URL}", []),
+        ("Send me the payment link for my package", "", "Which package is it?", []),
+        ("Silver or Gold, which is better?", "", "Both suit you.", []),
+        ("I want Silver instead", "saved", "Sure, Silver it is.", []),
+        ("Ready to book Gold", "not ready", "Let me check that package.", []),
+        ("Tell me more about the options", "soft", "Happy to.", []),
+    ],
+)
+def test_a_ready_payment_link_for_the_patients_one_package_is_sent(
+    fixture: Fixture, message: str, selection: str, response: str, codes: list[str]
+) -> None:
+    executor = Executor(fixture.tool_data, fixture.constants)
+    user = fixture.constants["USER_ID"]
+    executor.execute("c1", "getClinicPackages", {"clinicName": "Heva"})
+    executor.execute("c2", "getLatestAssessment", {"userId": user})
+    chosen = {"write": "selectedPackageId", "soft": "softPackageInterestIds"}.get(selection)
+    if chosen:
+        value = GOLD_ID if selection == "write" else [GOLD_ID]
+        args = {"userId": user, "clinicSelection": {"selectedClinicId": HEVA_ID, chosen: value}}
+        assert executor.execute("c3", "updateUserClinicPreferences", args).status == "ok"
+    package = HEVA_ID if selection == "not ready" else GOLD_ID
+    executor.execute("c4", "getPaymentLink", {"type": "payment", "clinicPackageId": package})
+    observations = list(executor.observations)
+    if selection == "saved":
+        saved = {"clinicSelectionPreferences": {"selectedPackageId": GOLD_ID}}
+        observations.append(
+            Observation(
+                call_id="c5",
+                tool="getPatientContext",
+                kind="read",
+                args={"userId": user},
+                status="ok",
+                result=saved,
+            )
+        )
+    evidence = build_evidence(observations, clinics=fixture.tool_data.clinics)
+    assert _codes(_draft(response), evidence, message) == codes
 
 
 def test_attachments_must_be_tool_returned(evidence: Evidence) -> None:

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from support import GOLD_ID, HEVA_ANSWER, HEVA_ID, SILVER_ID, USER_ID
+from support import GOLD_ID, GOLD_PAYMENT_URL, HEVA_ANSWER, HEVA_ID, SILVER_ID, USER_ID
 
 from doctours_reply.contract.io import InputItem
 from doctours_reply.models.client import ChatRequest, ChatResponse
@@ -360,6 +360,29 @@ def test_a_draft_that_fails_validation_twice_escalates_after_the_write_rc_w_5() 
     outcome = result.trace.outcome
     assert outcome is not None
     assert (outcome.stage, list(outcome.executed_writes)) == ("validation", ["r1.save"])
+
+
+def test_a_draft_without_the_patients_ready_payment_link_is_repaired_to_send_it() -> None:
+    client = ScriptedModelClient(
+        [
+            route("payments.links"),
+            decide("call_tools", call("packages", "getClinicPackages", clinicName="Heva Clinic")),
+            decide(
+                "call_tools",
+                call("link", "getPaymentLink", type="payment", clinicPackageId=GOLD_ID),
+                review=None,
+            ),
+            decide("answer", review=None),
+            draft("Great choice, the payment link is below."),
+            draft(f"Great choice, here is your payment link.\n{GOLD_PAYMENT_URL}"),
+        ]
+    )
+    result = _run(client, "Heva Gold it is, how do I pay?")
+    assert _purposes(result)[-2:] == ["write", "validation_repair"]
+    assert "- missing_link: The patient has decided on Gold" in str(
+        client.requests[-1].messages[-1]["content"]
+    )
+    assert result.reply.response.endswith(GOLD_PAYMENT_URL)
 
 
 def test_a_repeated_write_executes_once_rc_w_6() -> None:
