@@ -12,31 +12,13 @@ from typing import Final, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, JsonValue, ValidationError, model_validator
 
+from doctours_reply.runtime.decision import EscalationCode, IntentKind
 from doctours_reply.runtime.refs import Fixture
 from doctours_reply.tools.registry import TOOLS
 
 REPO_ROOT: Final = Path(__file__).resolve().parents[3]
 EVAL_DIR: Final = REPO_ROOT / "eval"
 
-EscalationCode = Literal[
-    "human_requested",
-    "unsupported_payment_action",
-    "unsupported_money_movement",
-    "unsupported_clinic_contact",
-    "unsupported_date_hold",
-    "unsupported_booking_change",
-    "unsupported_document_action",
-    "unsupported_other",
-]
-IntentKind = Literal[
-    "policy_question",
-    "information_request",
-    "action_request",
-    "preference_statement",
-    "human_request",
-    "pause",
-    "other",
-]
 Control = Literal[
     "policy_question",
     "negated_or_quoted_human_mention",

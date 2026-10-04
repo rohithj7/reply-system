@@ -15,8 +15,11 @@ class _Record(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+Purpose = Literal["turn", "json_repair", "validation_repair", "route", "decide", "write"]
+
+
 class ModelCall(_Record):
-    purpose: Literal["turn", "json_repair", "validation_repair"]
+    purpose: Purpose
     request_sha256: str
     model_id: str
     content: str | None
@@ -39,7 +42,7 @@ class TraceRecord(_Record):
     run_id: str
     item_index: int
     item_id: str
-    system: Literal["baseline"]
+    system: Literal["baseline", "modular"]
     fixture_id: str
     fixture_sha256: str
     policy_set_id: str
@@ -49,9 +52,15 @@ class TraceRecord(_Record):
     message: str
     redactions: int
     model_calls: list[ModelCall] = []
+    decisions: list[dict[str, Any]] = []
+    """S1 controller decisions, in order, each with its step name."""
+    policies: list[dict[str, str]] = []
+    """S1 loaded policy modules: id, version and sha256."""
     observations: list[Observation] = []
     fact_table: list[dict[str, Any]] = []
     validations: list[ValidationResult] = []
     outcome: TerminalOutcome | None = None
     reply: Reply | None = None
     error: str | None = None
+    latency_ms: int = 0
+    """End-to-end wall time for the item, model calls and tools included."""

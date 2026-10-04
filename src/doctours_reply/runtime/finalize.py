@@ -37,11 +37,11 @@ def finalize(outcome: TerminalOutcome, memory: Mapping[str, Any]) -> Reply:
         followUpTiming=draft.followUpTiming,
         attachmentUrls=list(draft.attachmentUrls or []),
         highEngagement=draft.highEngagement,
-        workingMemoryUpdates=_changed(draft.workingMemoryUpdates, memory),
+        workingMemoryUpdates=memory_diff(draft.workingMemoryUpdates, memory),
     )
 
 
-def _changed(
+def memory_diff(
     updates: WorkingMemoryUpdates | None, memory: Mapping[str, Any]
 ) -> WorkingMemoryUpdates | None:
     if updates is None:

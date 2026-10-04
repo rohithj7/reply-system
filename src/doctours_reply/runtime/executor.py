@@ -3,7 +3,8 @@
 One `Executor` serves one item. It validates arguments against the registry, requires
 clinic and package IDs to have come from a tool result this turn, runs each distinct
 write at most once and `updateWorkingMemory` at most once, and refuses every call after
-`close()`. Every request, accepted or not, is recorded as an `Observation`.
+`close()`. With an `allowed` set, a tool outside it is refused as `tool_not_loaded`
+without spending budget. Every request, accepted or not, is recorded as an `Observation`.
 """
 
 import json
@@ -57,10 +58,20 @@ class Executor:
     def executed_writes(self) -> tuple[str, ...]:
         return tuple(o.call_id for o in self.observations if o.kind == "write" and o.executed)
 
+    @property
+    def calls_left(self) -> int:
+        return self._calls_left
+
     def close(self) -> None:
         self._closed = True
 
-    def execute(self, call_id: str, name: str, args: Mapping[str, Any] | str) -> Observation:
+    def execute(
+        self,
+        call_id: str,
+        name: str,
+        args: Mapping[str, Any] | str,
+        allowed: frozenset[str] | None = None,
+    ) -> Observation:
         if self._closed:
             raise ExecutorClosedError(f"{name} requested after the outcome was selected")
         try:
@@ -71,6 +82,15 @@ class Executor:
         if raw is None:
             return self._record(
                 call_id, spec.name, spec.kind, args, "rejected", reason="arguments not an object"
+            )
+        if allowed is not None and spec.name not in allowed:
+            return self._record(
+                call_id,
+                spec.name,
+                spec.kind,
+                raw,
+                "tool_not_loaded",
+                reason="no loaded policy allows this tool",
             )
         if self._calls_left <= 0:
             return self._record(
@@ -85,6 +105,17 @@ class Executor:
         if unproven := self._unproven_ids(parsed):
             reason = f"IDs not returned by a tool this turn: {', '.join(unproven)}"
             return self._record(call_id, spec.name, spec.kind, parsed, "rejected", reason=reason)
+        return self._run_once(call_id, spec, parsed)
+
+    def commit_memory(self, call_id: str, diff: Mapping[str, Any]) -> Observation:
+        """Ledger A-15: the single `updateWorkingMemory` call, outside the tool budget."""
+        if self._closed:
+            raise ExecutorClosedError(f"{_MEMORY_TOOL} requested after the outcome was selected")
+        spec = TOOLS[_MEMORY_TOOL]
+        args = spec.args_model.model_validate({"memory": dict(diff)}).model_dump(exclude_unset=True)
+        return self._run_once(call_id, spec, args)
+
+    def _run_once(self, call_id: str, spec: ToolSpec, parsed: dict[str, Any]) -> Observation:
         key = _MEMORY_TOOL if spec.name == _MEMORY_TOOL else f"{spec.name}:{_canonical(parsed)}"
         if spec.kind == "write" and (first := self._writes.get(key)) is not None:
             return self._record(

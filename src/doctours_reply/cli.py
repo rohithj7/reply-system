@@ -42,7 +42,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     run = commands.add_parser("run", help="reply to a JSON array of messages")
     run.add_argument("--input", required=True, help="input JSON path, or - for stdin")
     run.add_argument("--output", required=True, help="output JSON path, or - for stdout")
-    run.add_argument("--system", choices=["baseline"], default="baseline")
+    run.add_argument("--system", choices=["baseline", "modular"], default="baseline")
     run.add_argument("--trace-dir", type=Path, help="default: runs/<run id>/")
     run.add_argument("--concurrency", type=int, default=1, help=f"1-{MAX_CONCURRENCY}")
     run.add_argument("--fixture-id", default="packet", help=argparse.SUPPRESS)

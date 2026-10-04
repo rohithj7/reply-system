@@ -6,7 +6,9 @@ from pydantic import BaseModel, ConfigDict, JsonValue
 
 from doctours_reply.tools.registry import ToolKind
 
-ObservationStatus = Literal["ok", "null_result", "rejected", "duplicate_write", "error"]
+ObservationStatus = Literal[
+    "ok", "null_result", "rejected", "tool_not_loaded", "duplicate_write", "error"
+]
 EXECUTED: frozenset[ObservationStatus] = frozenset({"ok", "null_result", "error"})
 
 

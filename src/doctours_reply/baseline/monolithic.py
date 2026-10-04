@@ -6,7 +6,6 @@ message. Tool calls go through the shared executor; the final JSON goes through 
 shared validators, one repair and the finalizer. See decision record 0003.
 """
 
-import hashlib
 import json
 from dataclasses import asdict
 from decimal import Decimal
@@ -22,6 +21,7 @@ from doctours_reply.runtime.escalation import DEFAULT_REASON, HANDOFF_SENTENCE, 
 from doctours_reply.runtime.evidence import Evidence, Fact, build_evidence
 from doctours_reply.runtime.executor import Executor
 from doctours_reply.runtime.grounding import Violation
+from doctours_reply.runtime.model_calls import complete
 from doctours_reply.runtime.observation import Observation
 from doctours_reply.runtime.outcome import Draft, Escalation, OutcomeStage, TerminalOutcome
 from doctours_reply.runtime.validate import (
@@ -31,7 +31,7 @@ from doctours_reply.runtime.validate import (
     repair_instructions,
 )
 from doctours_reply.tools.registry import TOOLS
-from doctours_reply.trace.schema import ModelCall, TraceRecord, ValidationResult
+from doctours_reply.trace.schema import TraceRecord, ValidationResult
 
 LEGACY_DIR: Final = Path(__file__).resolve().parents[1] / "prompts" / "legacy"
 MAX_TOOL_ROUNDS: Final = 3
@@ -164,36 +164,7 @@ def _call(
         tools=TOOL_SCHEMAS,
         tool_choice=tool_choice,
     )
-    response = client.complete(request)
-    trace.model_calls.append(
-        ModelCall(
-            purpose=purpose,
-            request_sha256=_request_hash(request),
-            model_id=response.model_id or client.model_id,
-            content=response.content,
-            tool_calls=[
-                {"id": c.id, "name": c.name, "arguments": c.arguments} for c in response.tool_calls
-            ],
-            finish_reason=response.finish_reason,
-            prompt_tokens=response.prompt_tokens,
-            cached_prompt_tokens=response.cached_prompt_tokens,
-            completion_tokens=response.completion_tokens,
-            latency_ms=response.latency_ms,
-            attempts=response.attempts,
-        )
-    )
-    return response
-
-
-def _request_hash(request: ChatRequest) -> str:
-    payload = {
-        "messages": list(request.messages),
-        "tools": list(request.tools),
-        "tool_choice": request.tool_choice,
-        "response_schema": request.response_schema,
-    }
-    canonical = json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
-    return hashlib.sha256(canonical.encode()).hexdigest()
+    return complete(client, request, trace, purpose)
 
 
 def _assistant_tool_message(response: ChatResponse) -> Message:

@@ -1,4 +1,44 @@
 {
   "schema_version": 1,
-  "policy_sets": []
+  "policy_sets": [
+    {
+      "policy_set_id": "lean-as-soft-interest",
+      "kind": "overlay",
+      "base": "shipped",
+      "modules": [
+        {
+          "module_id": "clinics.selection",
+          "path": "lean-as-soft-interest/clinics_selection.md",
+          "sha256": "3f878556b732c7c78c9d50182f41087253e246e0599165404701583d7c226fe4",
+          "replaces_version": "1.0.0"
+        }
+      ]
+    },
+    {
+      "policy_set_id": "checkout-only-links",
+      "kind": "overlay",
+      "base": "shipped",
+      "modules": [
+        {
+          "module_id": "payments.links",
+          "path": "checkout-only-links/payments_links.md",
+          "sha256": "563cd3000bb65ee7c0f5374c61bef158ad7a22638d9bfe0754b05f57ae931369",
+          "replaces_version": "1.0.0"
+        }
+      ]
+    },
+    {
+      "policy_set_id": "deposit-fee-change",
+      "kind": "overlay",
+      "base": "shipped",
+      "modules": [
+        {
+          "module_id": "payments.terms",
+          "path": "deposit-fee-change/payments_terms.md",
+          "sha256": "dcd7b7d9d20ace9be3ffa7c5c797c85efa19be7bd7ed196cee5396d1f21e96ad",
+          "replaces_version": "1.0.0"
+        }
+      ]
+    }
+  ]
 }

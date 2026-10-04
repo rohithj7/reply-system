@@ -16,6 +16,38 @@
           "sha256": "ac6227aa6d4b803d5d3faa2b5674351bc748085e78318fb03bc625b6f2575971"
         }
       ]
+    },
+    {
+      "fixture_id": "sapphire-price-change",
+      "derived_from": "hand-authored",
+      "files": [
+        {
+          "role": "constants",
+          "path": "packet/constants.json",
+          "sha256": "bc38ce1685e7b0265190b64a6a7ff1345a0dd28ae1becbfd1c0c614b2b48ce11"
+        },
+        {
+          "role": "tool_data",
+          "path": "sapphire-price-change/tool_data.json",
+          "sha256": "2716a5ef8ecf35847763627ad8dac4baf981e9ebec68a92e718e20f1392bd955"
+        }
+      ]
+    },
+    {
+      "fixture_id": "promo-active",
+      "derived_from": "hand-authored",
+      "files": [
+        {
+          "role": "constants",
+          "path": "promo-active/constants.json",
+          "sha256": "cd4449ec33302afb1640df19fb59a2dd1bb8b56a94cf0ea715affe5ba818bdd3"
+        },
+        {
+          "role": "tool_data",
+          "path": "promo-active/tool_data.json",
+          "sha256": "925509bcb8163491ed51871a1894384ae8985ad762df28d56cf433104430047c"
+        }
+      ]
     }
   ]
 }

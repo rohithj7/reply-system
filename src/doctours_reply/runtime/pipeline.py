@@ -5,6 +5,7 @@ and policy set are shared. A model failure stops the batch: its partial trace, i
 any writes already executed, is still written, and the caller writes no output.
 """
 
+import time
 from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
@@ -17,14 +18,15 @@ from doctours_reply.models.client import ModelClient, ModelError
 from doctours_reply.runtime.context import TurnContext, build_context
 from doctours_reply.runtime.executor import Executor
 from doctours_reply.runtime.finalize import finalize
+from doctours_reply.runtime.modular import run_modular
 from doctours_reply.runtime.outcome import Draft, OutcomeSlot, TerminalOutcome
 from doctours_reply.runtime.refs import Fixture, PolicySet
 from doctours_reply.trace.schema import TraceRecord
 from doctours_reply.trace.sink import TraceSink
 
-System = Literal["baseline"]
+System = Literal["baseline", "modular"]
 SystemRunner = Callable[[TurnContext, ModelClient, Executor, TraceRecord], TerminalOutcome]
-SYSTEMS: dict[System, SystemRunner] = {"baseline": run_baseline}
+SYSTEMS: dict[System, SystemRunner] = {"baseline": run_baseline, "modular": run_modular}
 
 BLANK_MESSAGE_DRAFT = Draft(
     response="It looks like your message came through empty. What can I help you with?",
@@ -85,6 +87,7 @@ def run_item(
     )
     executor = Executor(fixture.tool_data, fixture.constants)
     slot = OutcomeSlot()
+    started = time.monotonic()
     try:
         if ctx.message.text.strip():
             slot.set(SYSTEMS[system](ctx, client, executor, trace))
@@ -96,6 +99,7 @@ def run_item(
         raise ItemFailedError(index, item.id, exc, trace) from exc
     finally:
         executor.close()
+        trace.latency_ms = round((time.monotonic() - started) * 1000)
     outcome = slot.outcome
     assert outcome is not None
     reply = finalize(outcome, ctx.working_memory)

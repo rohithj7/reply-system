@@ -43,6 +43,21 @@ def check_answer(draft: Draft, evidence: Evidence, message: RedactedText) -> lis
     return violations
 
 
+def check_policy_phrases(
+    response: str, patterns: Sequence[tuple[str, re.Pattern[str]]]
+) -> list[Violation]:
+    """Phrases a loaded policy module forbids; `patterns` pairs a module ref with a regex."""
+    return [
+        Violation(
+            "policy_phrase",
+            f"The reply says {found.group(0)!r}, which a loaded policy forbids.",
+            source_ref=ref,
+        )
+        for ref, pattern in patterns
+        if (found := pattern.search(response))
+    ]
+
+
 def check_escalation_sentence(sentence: str, message: RedactedText) -> list[Violation]:
     violations = []
     if len(split_sentences(sentence)) != 1 or len(sentence.split()) > MAX_ESCALATION_WORDS:

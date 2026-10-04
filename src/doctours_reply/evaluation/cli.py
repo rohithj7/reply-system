@@ -56,7 +56,7 @@ def main(argv: Sequence[str]) -> int:
     parser.add_argument(
         "--suite", required=True, help=f"comma-separated {', '.join(SUITES)}, or all"
     )
-    parser.add_argument("--system", default="baseline", help="comma-separated: baseline")
+    parser.add_argument("--system", default="baseline", help="comma-separated: baseline, modular")
     parser.add_argument("--runs", type=int, default=1, help=f"1-{MAX_RUNS} runs per system")
     parser.add_argument("--report", type=Path, help="default: runs/eval-<run id>/")
     parser.add_argument("--log-entry", help="schedule row; required for held-out suites")
