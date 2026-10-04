@@ -107,6 +107,9 @@ _REMAINDER_IN = re.compile(
 _COMPARISON_AFTER = re.compile(
     r"\s*(?:USD\s+)?(cheaper|less|lower|more|higher|pricier|difference)\b", re.IGNORECASE
 )
+_COMPARISON_BEFORE = re.compile(
+    r"\b(cheaper|less|lower|more|higher|pricier)(?:\s+expensive)?\s+by\s*$", re.IGNORECASE
+)
 _DIFFERENCE_IN = re.compile(r"\bdifference\b", re.IGNORECASE)
 _DENIED_AFTER = re.compile(
     r"\s+(?:package\s+)?(?:is\s+not|isn['’]t|are\s+not|aren['’]t|does\s+not|doesn['’]t)\s+"
@@ -340,7 +343,7 @@ def _calculation(
     start, end = _clause_span(text, money.start)
     after, lead = text[money.end : end], text[start : money.start]
     remainder = bool(_REMAINDER_AFTER.match(after))
-    cue = _COMPARISON_AFTER.match(after)
+    cue = _COMPARISON_AFTER.match(after) or _COMPARISON_BEFORE.search(lead)
     if not remainder and not cue:
         if _LABEL_AFTER.match(after) or _LABEL_BEFORE.search(lead):
             return None
@@ -424,7 +427,10 @@ def _aggregate(
     evidence: Evidence,
     clinic_spots: Sequence[tuple[int, str]],
 ) -> list[Violation]:
-    clinic_ids = {clinic_id for _, clinic_id in clinic_spots}
+    start, end = _clause_span(text, money.start)
+    clinic_ids = {cid for spot, cid in clinic_spots if start <= spot < end} or {
+        cid for _, cid in clinic_spots
+    }
     facts = [
         f
         for group in evidence.packages().values()

@@ -51,6 +51,16 @@ def _codes(response: str, evidence: Evidence, message: str = "") -> list[str]:
         ("RC-G-12c", "A $750 deposit holds your spot.", ["unlinked_amount"]),
         ("range", "Packages range from $3,000 to $4,500.", []),
         ("range-wrong", "Packages range from $3,000 to $6,000.", ["wrong_value"]),
+        (
+            "per-clinic-min",
+            "Heva Clinic's packages start at $3,000, and Dr. Hakan Clinic's start at $3,200.",
+            [],
+        ),
+        (
+            "per-clinic-min-swapped",
+            "Heva Clinic's packages start at $3,200, and Dr. Hakan Clinic's start at $3,000.",
+            ["wrong_value", "wrong_value"],
+        ),
         ("clause", "Silver is $3,000 USD with a $500 deposit.", []),
     ],
 )
@@ -159,6 +169,13 @@ def test_repair_instructions_carry_the_correct_value_and_source(fixture: Fixture
             [],
         ),
         ((HEVA, HAKAN), "Sapphire or Silver?", "Silver is $200 cheaper than Sapphire.", []),
+        ((HEVA, HAKAN), "Sapphire or Silver?", "Silver is cheaper by $200 than Sapphire.", []),
+        (
+            (HEVA, HAKAN),
+            "Sapphire or Silver?",
+            "Sapphire is more expensive by $200 than Silver.",
+            [],
+        ),
         (
             (HEVA, HAKAN),
             "Sapphire or Silver?",
@@ -227,6 +244,13 @@ def test_corrections_absences_and_differences_are_not_claims(
         ((HEVA,), "Left?", "Gold's remaining balance is $4,500.", ["unverified_calculation"]),
         ((HEVA,), "Left?", "So $3,900 remains.", ["unverified_calculation"]),
         ((HEVA, HAKAN), "Cheaper?", "Silver is $200 cheaper.", ["unverified_calculation"]),
+        ((HEVA, HAKAN), "Cheaper?", "Silver is cheaper by $200 USD.", ["unverified_calculation"]),
+        (
+            (HEVA, HAKAN),
+            "Cheaper?",
+            "Silver is cheaper by $300 than Sapphire.",
+            ["unverified_calculation"],
+        ),
         ((HEVA, HAKAN), "Cheaper?", "Gold is $200 cheaper.", ["unverified_calculation"]),
         (
             (HEVA, HAKAN),

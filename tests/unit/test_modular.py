@@ -172,7 +172,7 @@ def test_requests_carry_the_selected_policy_text_and_tools_rc_pl_1(
     )
     result = _run(client, "How do I pay?", policy_set_id=policy_set_id)
     route_request, decide_request = client.requests[:2]
-    assert "[policy core.escalation v1.2.0]" in str(route_request.messages[0]["content"])
+    assert "[policy core.escalation v1.3.0]" in str(route_request.messages[0]["content"])
     route_state = _state(route_request)
     assert {"payments.links", "payments.terms"} <= {c["id"] for c in route_state["catalog"]}
     assert "tools" not in route_state
