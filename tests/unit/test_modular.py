@@ -7,7 +7,15 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from support import GOLD_ID, GOLD_PAYMENT_URL, HEVA_ANSWER, HEVA_ID, SILVER_ID, USER_ID
+from support import (
+    CARD_DETAILS,
+    GOLD_ID,
+    GOLD_PAYMENT_URL,
+    HEVA_ANSWER,
+    HEVA_ID,
+    SILVER_ID,
+    USER_ID,
+)
 
 from doctours_reply.contract.io import InputItem
 from doctours_reply.models.client import ChatRequest, ChatResponse
@@ -23,6 +31,7 @@ from doctours_reply.runtime.refs import ToolData, resolve_fixture, resolve_polic
 from doctours_reply.runtime.validate import check_answer, check_policy_phrases
 from doctours_reply.runtime.writer import write_reply
 from doctours_reply.tools.registry import TOOLS
+from doctours_reply.trace.sink import TraceSink
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUN = RunInfo("run-test", None, None)
@@ -252,6 +261,23 @@ def test_context_policies_follow_the_fixture_constants_rc_pl_5(
     assert promo in ids and other not in ids
     assert ("payments.links" in ids) is promo_tool
     assert ("issuePromoCode" in _tools(client.requests[1])) is promo_tool
+
+
+@pytest.mark.parametrize(("text", "details"), CARD_DETAILS)
+def test_card_details_never_reach_a_model_call_or_the_saved_trace(
+    tmp_path: Path, text: str, details: tuple[str, ...]
+) -> None:
+    client = ScriptedModelClient(
+        [route(), decide("answer"), draft("Please don't send card details.")]
+    )
+    result = _run(client, text)
+    sink = TraceSink(tmp_path)
+    sink.write(result.trace)
+    sent, saved = json.dumps([r.messages for r in client.requests]), sink.path.read_text()
+    assert len(client.requests) == 3
+    assert "[CARD_" in sent and "[CARD_" in saved
+    for detail in details:
+        assert detail not in sent and detail not in saved
 
 
 def test_a_route_escalation_runs_no_tool_rc_w_1() -> None:

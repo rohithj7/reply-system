@@ -1,9 +1,18 @@
 """S0 end to end on scripted model responses: no network, no live model."""
 
 import json
+from pathlib import Path
 
 import pytest
-from support import GOLD_ID, HEVA_ANSWER, HEVA_ID, USER_ID, escalation_json, reply_json
+from support import (
+    CARD_DETAILS,
+    GOLD_ID,
+    HEVA_ANSWER,
+    HEVA_ID,
+    USER_ID,
+    escalation_json,
+    reply_json,
+)
 
 from doctours_reply.baseline.monolithic import MAX_TOOL_ROUNDS, TOOL_SCHEMAS
 from doctours_reply.contract.io import InputItem
@@ -12,6 +21,7 @@ from doctours_reply.runtime.escalation import DEFAULT_REASON, HANDOFF_SENTENCE
 from doctours_reply.runtime.payment_data import CARD_NUMBER
 from doctours_reply.runtime.pipeline import BLANK_MESSAGE_DRAFT, ItemResult, RunInfo, run_item
 from doctours_reply.runtime.refs import Fixture, PolicySet
+from doctours_reply.trace.sink import TraceSink
 
 RUN = RunInfo("run-test", None, None)
 HEVA = ("getClinicPackages", {"clinicName": "Heva"})
@@ -71,6 +81,20 @@ def test_card_numbers_never_reach_the_model_trace_or_reply_rc_e_8(
         assert leaked not in result.reply.model_dump_json()
     assert result.trace.redactions == 1
     assert result.reply.escalate is False
+
+
+@pytest.mark.parametrize(("text", "details"), CARD_DETAILS)
+def test_card_details_never_reach_the_model_or_the_saved_trace(
+    fixture: Fixture, policy_set: PolicySet, tmp_path: Path, text: str, details: tuple[str, ...]
+) -> None:
+    client = ScriptedModelClient([text_response(reply_json("Please don't send card details."))])
+    result = _run(fixture, policy_set, client, text)
+    sink = TraceSink(tmp_path)
+    sink.write(result.trace)
+    sent, saved = json.dumps([r.messages for r in client.requests]), sink.path.read_text()
+    assert "[CARD_" in sent and "[CARD_" in saved
+    for detail in details:
+        assert detail not in sent and detail not in saved
 
 
 def test_escalation_after_a_write_stops_tools_and_keeps_the_write_rc_w_4(

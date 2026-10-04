@@ -50,12 +50,37 @@ def test_card_fragments_are_redacted(text: str, digits: str) -> None:
 
 
 @pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("My card is 5555555555554444, keep it.", f"My card is {CARD_NUMBER}, keep it."),
+        ("card 4242-4242-4242-4242, thanks", f"card {CARD_NUMBER}, thanks"),
+        ("It's 4242 4242 4242 4242.", f"It's {CARD_NUMBER}."),
+        ("card no.4242424242424242 please", f"card no.{CARD_NUMBER} please"),
+        ("4242424242424242 4242424242424242", f"{CARD_NUMBER} {CARD_NUMBER}"),
+        ("4111 1111 1111 1111 11/29 731", f"{CARD_NUMBER} {CARD_FRAGMENT} {CARD_FRAGMENT}"),
+        ("4242424242424242, 11/29, 731", f"{CARD_NUMBER}, {CARD_FRAGMENT}, {CARD_FRAGMENT}"),
+        ("4111 1111 1111 1111 731 thanks", f"{CARD_NUMBER} {CARD_FRAGMENT} thanks"),
+        ("378282246310005 1234", f"{CARD_NUMBER} {CARD_FRAGMENT}"),
+        ("Can I use my Visa ending 9876?", f"Can I use my Visa ending {CARD_FRAGMENT}?"),
+        ("the card ending 9876 was declined", f"the card ending {CARD_FRAGMENT} was declined"),
+    ],
+)
+def test_card_details_are_redacted_up_to_their_own_boundaries(text: str, expected: str) -> None:
+    assert redact_card_data(text).text == expected
+
+
+@pytest.mark.parametrize(
     "text",
     [
         "Silver is $3,000 USD",
+        "Prices are $3,000, $4,500 and $600.",
         "within 12 months",
         "call me at +1 555 555 0123",
         "order 1234567890123",
+        "ref 42424242424242421",
+        "4242 4242 4242 4242 4242 4242",
+        "4242424242424242.50",
+        "the offer ending 2027",
         "2500 - 3200 grafts",
         "on 2026-10-03 at 10:02",
     ],

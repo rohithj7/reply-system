@@ -9,18 +9,26 @@ from dataclasses import dataclass
 CARD_NUMBER = "[CARD_NUMBER]"
 CARD_FRAGMENT = "[CARD_FRAGMENT]"
 
-_PAN = re.compile(r"(?<![\d.,])\d(?:[ -]?\d){12,18}(?![\d,]|\.\d)")
+# One block of 13-19 digits, or digit groups split by single spaces or dashes. A "." or ","
+# is part of a number only with a digit on its other side.
+_PAN = re.compile(r"(?<!\d)(?<!\d[.,])(?:\d{13,19}|\d+(?:[ -]\d+)+)(?!\d|[.,]\d)")
+# A grouped card number may be followed by one short group: an expiry month or a security code.
+_LAST_GROUP = re.compile(r"[ -]\d{1,4}$")
 # UUIDs (clinic, package and patient IDs) and hex digests can contain Luhn-valid digit runs.
 _IDENTIFIER = re.compile(
     r"\b(?:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|[0-9a-f]{32,})\b", re.IGNORECASE
 )
+_AFTER_CARD = re.escape(CARD_NUMBER) + r"[ ,;]+"
 _FRAGMENTS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
         r"\b(?:ending|ends)\s+(?:in|with)\s*:?\s*(\d{4})\b",
+        r"\b(?:card|visa|mastercard|amex)\s+(?:ending|ends)\s*:?\s*(\d{4})\b",
         r"\blast\s+(?:four|4)(?:\s+digits)?(?:\s+(?:are|is))?\s*:?\s*(\d{4})\b",
         r"\b(?:exp(?:iry|iration|ires)?|valid\s+thru)(?:\s+date)?\.?\s*:?\s*(\d{1,2}\s*/\s*\d{2,4})",
         r"\b(?:cvv2?|cvc2?|csc|security\s+code)\s*[:#]?\s*(\d{3,4})\b",
+        _AFTER_CARD + r"(\d{1,2}\s*/\s*\d{2,4})\b",
+        _AFTER_CARD + r"(?:" + re.escape(CARD_FRAGMENT) + r"[ ,;]+)?(\d{3,4})\b",
     )
 )
 
@@ -47,12 +55,16 @@ def redact_card_data(text: str) -> RedactedText:
     identifiers = [m.span() for m in _IDENTIFIER.finditer(text)]
 
     def pan(match: re.Match[str]) -> str:
-        digits = re.sub(r"\D", "", match.group())
-        in_id = any(start < match.end() and match.start() < end for start, end in identifiers)
-        if in_id or not _luhn_valid(digits):
-            return match.group()
-        removed.extend((digits, digits[-4:]))
-        return CARD_NUMBER
+        run = match.group()
+        if any(start < match.end() and match.start() < end for start, end in identifiers):
+            return run
+        tail = _LAST_GROUP.search(run)
+        for number in (run, run[: tail.start()]) if tail else (run,):
+            digits = re.sub(r"\D", "", number)
+            if 13 <= len(digits) <= 19 and _luhn_valid(digits):
+                removed.extend((digits, digits[-4:]))
+                return CARD_NUMBER + run[len(number) :]
+        return run
 
     def fragment(match: re.Match[str]) -> str:
         removed.append(re.sub(r"\s", "", match.group(1)))
