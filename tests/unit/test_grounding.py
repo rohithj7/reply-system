@@ -302,6 +302,70 @@ def test_denials_negations_and_calculations_must_be_grounded(
     assert _codes(response, _evidence(fixture, *calls), message) == codes
 
 
+@pytest.mark.parametrize(
+    ("response", "codes"),
+    [
+        # A detached clause names no clinic, so it does not inherit one from the sentence.
+        (
+            "Silver at Heva Clinic is $3,000 USD. Sapphire at Dr. Hakan Clinic is $3,200 USD, "
+            "so Silver is $200 USD cheaper.",
+            [],
+        ),
+        ("Gold at Heva Clinic is $4,500 USD, with a $600 USD deposit, so Sapphire is cheaper.", []),
+        ("Silver at Heva Clinic is $3,000 USD, so it is cheaper than Sapphire.", []),
+        ("Heva Clinic's Gold is $4,500 USD, while Sapphire is $3,200 USD.", []),
+        ("Sapphire at Dr. Hakan Clinic is $3,200 USD, so Gold is $1,300 USD more.", []),
+        (
+            "Sapphire at Dr. Hakan Clinic is $3,200 USD, so Gold is $1,300 USD cheaper.",
+            ["unverified_calculation"],
+        ),
+        (
+            "Silver at Heva Clinic is $3,000 USD. Sapphire at Dr. Hakan Clinic is $3,200 USD, "
+            "so Silver is $200 USD more expensive.",
+            ["unverified_calculation"],
+        ),
+        (
+            "Gold at Heva Clinic is $4,500 USD, so Sapphire is $3,400 USD.",
+            ["wrong_value"],
+        ),
+        ("Dr. Hakan Clinic offers Sapphire and Silver.", ["package_clinic_mismatch"]),
+        ("Heva Clinic has Gold, and Sapphire is $3,200 USD.", ["package_clinic_mismatch"]),
+        (
+            "Gold at Heva Clinic is $4,500 USD, so Sapphire there is cheaper.",
+            ["package_clinic_mismatch"],
+        ),
+        (
+            "Gold at Heva Clinic is $4,500 USD, so Sapphire at Heva Clinic is cheaper.",
+            ["package_clinic_mismatch"],
+        ),
+        (
+            "Gold at Heva Clinic is $4,500 USD, but Sapphire is also available.",
+            ["package_clinic_mismatch"],
+        ),
+        # An elided noun ("Gold's is") takes the attribute named before it.
+        ("Silver's upfront deposit is $500 USD; Gold's is $600 USD.", []),
+        ("Silver's deposit is $500 USD, and Gold's is $600 USD.", []),
+        ("Silver's price is $3,000 USD; Gold's is $4,500 USD.", []),
+        ("Silver's deposit is $500 USD; Gold's is $4,500 USD.", ["wrong_value"]),
+        ("Silver's price is $3,000 USD; Gold's is $600 USD.", ["wrong_value"]),
+        ("Silver's deposit is $500 USD; Sapphire's is $600 USD.", ["wrong_value"]),
+        # A code before the symbol is part of the amount.
+        ("Gold is USD $4,500 with a USD $600 deposit, leaving USD $3,900 to pay.", []),
+        ("Packages start from USD $3,000.", []),
+        (
+            "Gold is USD $4,500 with a USD $600 deposit, leaving USD $4,000 to pay.",
+            ["unverified_calculation"],
+        ),
+        ("Gold is USD $3,900.", ["wrong_value"]),
+        ("Packages start from USD $3,200.", ["wrong_value"]),
+    ],
+)
+def test_clause_scope_elided_attributes_and_leading_codes(
+    fixture: Fixture, response: str, codes: list[str]
+) -> None:
+    assert _codes(response, _evidence(fixture, HEVA, HAKAN)) == codes
+
+
 def test_numbers_must_appear_in_evidence_or_the_message(fixture: Fixture) -> None:
     evidence = _evidence(fixture, HEVA)
     assert _codes("Recovery takes 14 days.", evidence) == ["unsupported_number"]

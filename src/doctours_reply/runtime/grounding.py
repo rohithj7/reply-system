@@ -52,7 +52,7 @@ _SYMBOLS = {"$": "USD", "€": "EUR", "£": "GBP"}
 _WORDS = {"usd": "USD", "eur": "EUR", "gbp": "GBP", "dollar": "USD", "euro": "EUR", "pound": "GBP"}
 _AMOUNT = r"\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?"
 _MONEY = re.compile(
-    rf"(?P<sym>[$€£])\s?(?P<a1>{_AMOUNT})(?:\s?(?P<c1>USD|EUR|GBP)\b)?"
+    rf"(?:\b(?:USD|EUR|GBP)\s?)?(?P<sym>[$€£])\s?(?P<a1>{_AMOUNT})(?:\s?(?P<c1>USD|EUR|GBP)\b)?"
     rf"|\b(?P<c0>USD|EUR|GBP)\s?(?P<a0>{_AMOUNT})"
     rf"|(?<![\w.,])(?P<a2>{_AMOUNT})\s?(?P<c2>USD|EUR|GBP|dollars?|euros?|pounds?)\b",
     re.IGNORECASE,
@@ -124,6 +124,11 @@ _EXISTENCE = re.compile(
 _ARTICLES = frozenset({"a", "an", "any", "the", "such"})
 _ADVERBS = frozenset({"currently", "yet", "really", "actually", "seem", "to", "appear"})
 _POSSESSIVE = re.compile(r"['’]s\b")
+_ELLIPSIS = re.compile(r"['’]s\s+(?:is|was)\s*$")
+_ATTRIBUTE_NOUN = re.compile(r"\b(deposit|price|cost)", re.IGNORECASE)
+_DETACHED_AFTER = re.compile(r"(?:;|\b(?:but|while|whereas))$", re.IGNORECASE)
+_DETACHED_LEAD = re.compile(r"\s*(?:so|yet)\b", re.IGNORECASE)
+_BACK_REFERENCE = re.compile(r"\b(?:there|their|its|also|too|same)\b", re.IGNORECASE)
 _EMBEDDED_QUESTION = re.compile(r"\b(?:which|whether)\b", re.IGNORECASE)
 _SUBJECT_OF = re.compile(
     r"\s+(?:package\s+)?(?:is|are|has|have|includes|offers|costs)\b(?!\s+not\b)", re.IGNORECASE
@@ -197,6 +202,9 @@ def _check_sentence(
             continue
         clause = _clause(text, money.start).lower()
         attribute = "depositAmount" if "deposit" in clause else "basePrice"
+        if _ELLIPSIS.search(_clause_lead(text, money.start)):
+            nouns = _ATTRIBUTE_NOUN.findall(text[: money.start].lower())
+            attribute = "depositAmount" if nouns[-1:] == ["deposit"] else "basePrice"
         prefix = text[: money.start]
         partner = mentions[i + 1] if i + 1 < len(mentions) else None
         joined = partner is not None and _RANGE_JOIN.fullmatch(text[money.end : partner.start])
@@ -511,6 +519,16 @@ def _name_violations(
         near = {clinic_id for spot, clinic_id in clinic_spots if start <= spot < end}
         return near or {clinic_id for _, clinic_id in clinic_spots}
 
+    def detached(position: int) -> bool:
+        """An independent clause that names no clinic and does not refer back to one."""
+        start, end = _clause_span(text, position)
+        clause = text[start:end]
+        return bool(
+            (_DETACHED_AFTER.search(text[:start]) or _DETACHED_LEAD.match(clause))
+            and not _BACK_REFERENCE.search(clause)
+            and not any(start <= spot < end for spot, _ in clinic_spots)
+        )
+
     def unverified(clinic_ids: set[str]) -> list[Violation]:
         return [
             Violation(
@@ -555,7 +573,7 @@ def _name_violations(
             else:
                 violations += unverified(near)
             continue
-        if named_clinics and owner.clinic_id not in named_clinics:
+        if named_clinics and owner.clinic_id not in named_clinics and not detached(spot):
             violations.append(
                 Violation(
                     "package_clinic_mismatch",
