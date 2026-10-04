@@ -7,6 +7,11 @@ an attribute of the nearest named package (the deposit when the clause says "dep
 otherwise the base price). Nothing carries over between sentences. Unit counts must
 match the named package, named packages and clinics must exist and agree, and every
 other number must appear in what the model was shown.
+
+Three forms are not claims: a patient's amount after a negation in its clause ("not
+$3,500"), a package the patient named in a negated clause or a question ("I don't see a
+Platinum package"), and a difference cued as one ("$3,900 remains", "$200 cheaper") that
+equals price minus deposit or the gap between a named package and another package.
 """
 
 import re
@@ -67,7 +72,12 @@ _NAMED_PACKAGE = re.compile(r"\b([A-Z][a-z]+)\s+package\b")
 _NAMED_CLINIC = re.compile(r"\b((?:Dr\.?\s+)?[A-Z][a-z]+)\s+Clinic\b")
 _NOT_NAMES = frozenset(
     {"The", "This", "That", "Each", "Every", "Your", "Which", "What", "Any", "Our", "One"}
-    | {"Doctours", "Their", "Its", "Same", "Other", "Another", "Cheaper", "Bigger"}
+    | {"Doctours", "Their", "Its", "Same", "Other", "Another", "Cheaper", "Bigger", "Clinic"}
+)
+_NEGATION = re.compile(r"\b(?:no|not|never|cannot|without)\b|n['’]t\b", re.IGNORECASE)
+_DERIVED_CUE = re.compile(
+    r"\b(?:remain(?:s|ing)?|left|balance|rest|cheaper|less|more|higher|lower|difference)\b",
+    re.IGNORECASE,
 )
 
 
@@ -101,16 +111,17 @@ def format_money(amount: Decimal, currency: str) -> str:
 
 def check_grounding(response: str, evidence: Evidence, message: str) -> list[Violation]:
     message_numbers = {parse_number(n) for n in _NUMBER.findall(message)}
+    message_words = set(re.findall(r"[a-z]+", message.lower()))
     violations: list[Violation] = []
     for sentence in split_sentences(response):
         if URL.fullmatch(sentence):
             continue
-        violations += _check_sentence(sentence, evidence, message_numbers)
+        violations += _check_sentence(sentence, evidence, message_numbers, message_words)
     return violations
 
 
 def _check_sentence(
-    sentence: str, evidence: Evidence, message_numbers: set[Decimal]
+    sentence: str, evidence: Evidence, message_numbers: set[Decimal], message_words: set[str]
 ) -> list[Violation]:
     text = URL.sub(lambda m: " " * len(m.group()), sentence)
     packages = evidence.packages()
@@ -118,7 +129,8 @@ def _check_sentence(
         (m.start(), name) for name in packages for m in re.finditer(rf"\b{re.escape(name)}\b", text)
     ]
     clinic_spots = _clinic_spots(text, evidence)
-    violations = _name_violations(text, evidence, package_spots, clinic_spots)
+    violations = _name_violations(text, evidence, package_spots, clinic_spots, message_words)
+    derived = _derived({name for _, name in package_spots}, packages)
     claimed: list[tuple[int, int]] = []
     mentions = money_mentions(text)
     skip: set[int] = set()
@@ -128,7 +140,11 @@ def _check_sentence(
         claimed.append((money.start, money.end))
         if _ATTRIBUTION.search(text) and money.amount in message_numbers:
             continue
+        if money.amount in message_numbers and _NEGATION.search(_clause_lead(text, money.start)):
+            continue
         clause = _clause(text, money.start).lower()
+        if _DERIVED_CUE.search(clause) and (money.amount, money.currency) in derived:
+            continue
         attribute = "depositAmount" if "deposit" in clause else "basePrice"
         prefix = text[: money.start]
         partner = mentions[i + 1] if i + 1 < len(mentions) else None
@@ -232,6 +248,29 @@ def _clause(text: str, position: int) -> str:
     return text[start:end]
 
 
+def _clause_lead(text: str, position: int) -> str:
+    """The part of the clause containing `position` that comes before it."""
+    starts = [m.end() for m in _CLAUSE_BREAK.finditer(text, 0, position)]
+    return text[max(starts, default=0) : position]
+
+
+def _derived(names: set[str], packages: dict[str, list[Fact]]) -> set[tuple[Decimal, str | None]]:
+    def value(name: str, attribute: str) -> Fact | None:
+        return next((f for f in packages[name] if f.attribute == attribute), None)
+
+    found = set()
+    for name in names:
+        price, deposit = value(name, "basePrice"), value(name, "depositAmount")
+        if price and deposit and price.unit == deposit.unit:
+            found.add((price.value - deposit.value, price.unit))
+        for other in packages.keys() - {name}:
+            for attribute in ("basePrice", "depositAmount"):
+                mine, theirs = value(name, attribute), value(other, attribute)
+                if mine and theirs and mine.unit == theirs.unit:
+                    found.add((abs(mine.value - theirs.value), mine.unit))
+    return found
+
+
 def _nearest(spots: Sequence[tuple[int, str]], position: int) -> str | None:
     before = [s for s in spots if s[0] < position]
     if before:
@@ -262,11 +301,16 @@ def _name_violations(
     evidence: Evidence,
     package_spots: Sequence[tuple[int, str]],
     clinic_spots: Sequence[tuple[int, str]],
+    message_words: set[str],
 ) -> list[Violation]:
     violations = []
     tokens = _clinic_tokens(evidence)
     known_words = {w for token in tokens for w in token.split()} | set(evidence.packages())
+    question = text.rstrip().endswith("?")
     for match in _NAMED_PACKAGE.finditer(text):
+        not_claimed = question or _NEGATION.search(_clause(text, match.start()))
+        if match.group(1).lower() in message_words and not_claimed:
+            continue
         if match.group(1) not in known_words | _NOT_NAMES:
             violations.append(
                 Violation("unknown_package", f"No tool result this turn has a {match.group(0)}.")
@@ -278,8 +322,10 @@ def _name_violations(
             violations.append(Violation("unknown_clinic", detail))
     named_clinics = {clinic_id for _, clinic_id in clinic_spots}
     packages = evidence.packages()
-    for _, name in package_spots:
+    for spot, name in package_spots:
         owner = packages[name][0]
+        if _NEGATION.search(_clause(text, spot)):
+            continue
         if named_clinics and owner.clinic_id not in named_clinics:
             violations.append(
                 Violation(

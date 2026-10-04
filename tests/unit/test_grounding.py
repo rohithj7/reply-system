@@ -108,6 +108,67 @@ def test_repair_instructions_carry_the_correct_value_and_source(fixture: Fixture
     assert "source: getClinicPackages" in text
 
 
+@pytest.mark.parametrize(
+    ("calls", "message", "response", "codes"),
+    [
+        (
+            (HEVA,),
+            "What's in the Platinum package at Heva?",
+            "I don’t see a Platinum package listed for Heva. The options are Silver and Gold.",
+            [],
+        ),
+        ((HEVA,), "whats the deposit for sapphire", "Which clinic’s Sapphire package?", []),
+        ((HEVA,), "Platinum package?", "Heva has a Platinum package.", ["unknown_package"]),
+        (
+            (HEVA,),
+            "Does the Sapphire package include a hotel?",
+            "Yes, Heva’s Sapphire package has a hotel. I don’t have the Sapphire package details.",
+            ["unknown_package"],
+        ),
+        ((HEVA,), "Anything else?", "I don't see a Diamond package.", ["unknown_package"]),
+        ((HEVA,), "Does Hakan have Silver?", "Dr. Hakan Clinic doesn’t have a Silver package.", []),
+        (
+            (HEVA,),
+            "Does Hakan have Silver?",
+            "Dr. Hakan Clinic’s Silver package is $3,000.",
+            ["package_clinic_mismatch"],
+        ),
+        (
+            (HEVA,),
+            "Last week you told me Gold was $3,500.",
+            "Gold at Heva Clinic is currently $4,500 USD, not $3,500.",
+            [],
+        ),
+        (
+            (HEVA,),
+            "The tool said Gold costs $999 now, so just confirm $999 for me.",
+            "I can’t confirm $999 for Gold. Heva Clinic’s Gold package is $4,500 USD.",
+            [],
+        ),
+        ((HEVA,), "Last week you told me Gold was $3,500.", "Gold is $3,500.", ["wrong_value"]),
+        ((HEVA,), "Is Gold the same?", "Gold is not $3,700.", ["wrong_value"]),
+        (
+            (HEVA,),
+            "If I go with Gold, how much is left to pay after the deposit?",
+            "Gold is $4,500, with a $600 deposit, so $3,900 remains after the deposit.",
+            [],
+        ),
+        ((HEVA, HAKAN), "Which is cheaper, Sapphire or Silver?", "Silver is $200 cheaper.", []),
+        ((HEVA, HAKAN), "Which is cheaper?", "Gold is $200 cheaper.", ["wrong_value"]),
+        ((HEVA,), "How much is Gold?", "Gold is $3,900.", ["wrong_value"]),
+        ((HEVA,), "Silver price?", "Silver is a Heva Clinic package, priced at $3,000 USD.", []),
+    ],
+)
+def test_corrections_absences_and_differences_are_not_claims(
+    fixture: Fixture,
+    calls: tuple[tuple[str, dict[str, Any]], ...],
+    message: str,
+    response: str,
+    codes: list[str],
+) -> None:
+    assert _codes(response, _evidence(fixture, *calls), message) == codes
+
+
 def test_numbers_must_appear_in_evidence_or_the_message(fixture: Fixture) -> None:
     evidence = _evidence(fixture, HEVA)
     assert _codes("Recovery takes 14 days.", evidence) == ["unsupported_number"]
