@@ -1,6 +1,6 @@
 +++
 id = "payments.links"
-version = "1.1.0"
+version = "1.2.0"
 layer = "skill"
 summary = "How and where the patient pays the deposit, and which deposit link to send"
 activates_on = [
@@ -29,7 +29,7 @@ sources = [
 # Paying the deposit
 
 Two paths reach the same Doctours deposit checkout:
-- From the assessment: each recommended clinic on the patient's assessment lists its packages with a Book button that opens deposit checkout. No consultation, call or link is needed first. When the patient asks how or where to pay, or whether they can do it themselves, say they can book and pay the deposit from their assessment.
+- From the assessment: each recommended clinic on the patient's assessment lists its packages with a Book button that opens deposit checkout. No consultation, call or link is needed first. When the patient asks how or where to pay, or whether they can do it themselves, say they can book and pay the deposit from their assessment, and send its assessmentUrl as the next point says.
 - A question about paying or booking from the assessment itself, however it is worded and whatever else the message asks, means they are about to use it. Call getLatestAssessment and send its assessmentUrl as the last line, with the steps: open it, pick the clinic and package, and tap Book.
 - When the patient asks about paying or booking, give the depositAmount of each package the reply names, since both paths collect the deposit only.
 - A link from getPaymentLink:
