@@ -1,14 +1,21 @@
 # Phase 2 report: monolithic baseline, shared runtime and evaluation runner
 
-Date: 2026-10-03. Last code commit: `828d0ad`, a scorer fix made after the first report commit (section 5). This report is a docs-only commit on top of it.
+Date: 2026-10-04. Last code commit: `3721b5e`. The held-out baseline ran on it, and this report update is a docs and results commit on top of it.
 
-**All evidence in this report is scripted.** Tests drive the system with `models/scripted.py` and make no network calls. No live model has been called, because no endpoint or model is configured (section 6). No live gate is marked passed.
+**Evidence comes in two kinds, labelled throughout.**
+
+- **Scripted:** tests drive the system with `models/scripted.py` and make no network calls.
+- **Live:** runs against `gpt-6-luna` at an OpenAI-compatible endpoint with `reasoning_effort=none` (section 2, live gates). The live smoke test was run by the owner. Every other live run was made by the agent with the commands shown.
 
 ## 1. Scope delivered
 
 - **Model client.**
   - `models/client.py`: the `ModelClient` protocol and typed errors.
-  - `models/openai_compat.py`: OpenAI SDK pinned at 3.24.0. It reads `MODEL_BASE_URL`, `MODEL_API_KEY` and `MODEL_ID` from the environment and supports `json_schema` or `json_object` structured output. Timeouts, connection errors, 429 and 5xx get bounded retries with backoff; other 4xx errors are not retried. Error text never contains the key.
+  - `models/openai_compat.py`: OpenAI SDK pinned at 3.24.0.
+    - It reads `MODEL_BASE_URL`, `MODEL_API_KEY` and `MODEL_ID` from the environment, plus optional timeout, retries, structured-output mode (`json_schema` or `json_object`), temperature and `MODEL_REASONING_EFFORT`.
+    - Temperature and reasoning effort are sent only when set.
+    - Timeouts, connection errors, 429 and 5xx get bounded retries with backoff; other 4xx errors are not retried.
+    - Error text never contains the key.
   - `models/scripted.py`: the scripted client used by every offline test.
   - `.env.example` holds placeholders only, and `.env` is git-ignored.
 - **Shared runtime** (`runtime/`, `trace/`).
@@ -16,7 +23,8 @@ Date: 2026-10-03. Last code commit: `828d0ad`, a scorer fix made after the first
   - Every request, accepted or rejected, is recorded as an `Observation`.
   - `outcome.py` has a single-assignment terminal-outcome slot: answered or escalated, with the stage and executed writes.
   - `evidence.py`, `grounding.py` and `validate.py` check that every amount and URL in a reply came from this turn's tool results, plus URL placement, card-number echoes and the escalation sentence and reason. They also build repair instructions.
-  - `payment_data.py` redacts Luhn-valid card numbers before the model sees the message and in traces.
+    - Three forms are not claims: a negated patient amount ("not $3,500"), a package the patient named in a negated clause or a question, and a cued difference that equals price minus deposit or a gap between two packages ("$3,900 remains", "$200 cheaper").
+  - `payment_data.py` redacts Luhn-valid card numbers before the model sees the message and in traces. UUIDs and hex digests are kept even when their digits pass Luhn.
   - `finalize.py` is pure: it takes the outcome and memory and returns the `Reply`. Escalated replies get the A-18 fields; answered replies keep only the memory keys that changed.
 - **Baseline, S0** (`baseline/monolithic.py`, decision record 0003).
   - It uses the verbatim legacy prompt, a contract appendix and all 14 tools, with up to 3 tool rounds.
@@ -54,11 +62,15 @@ The five plan corrections are preserved:
 - **Required memory-tool calls.** The baseline's model decides when to call `updateWorkingMemory`, as the packet does. The executor allows it once per item (RC-W-8), and the report measures `memory_tool_called_when_answered`.
 - **Resources separated from evaluation answers.** The guards cover imports, paths, leakage, and texts shared across suites.
 - **Grounded monetary claims.** Every amount must come from this turn's tool results. The one exception is the legacy prompt's stated $25 fee (`LEGACY_FACTS`, packet L1147). RC-G-1 to RC-G-13 cover this.
-- **Fair model selection.** Decision record 0003 says S0 and later systems use the same model, endpoint, fixtures and validators. No model has been chosen yet.
+- **Fair model selection.** Decision record 0003 says S0 and later systems use the same model, endpoint, fixtures and validators. The model is `gpt-6-luna` with `reasoning_effort=none`, and each report records its config sha256.
 
 ## 2. Checks run
 
-Run locally on 2026-10-03 at `55b31dc` with CPython 3.12.7. After the scorer fix in `828d0ad`, `pytest -m "not live"` gives `512 passed, 2 deselected`, and lint, format, types, the dry run and the audit pass again.
+Run locally on 2026-10-03 at `55b31dc` with CPython 3.12.7. Each later code commit reran lint, format, types, tests, the dry run and the audit. At `3721b5e`:
+
+- `pytest -m "not live"` gives `530 passed, 2 deselected`;
+- `ruff format --check` reports `86 files already formatted`;
+- the other checks give the same output as below.
 
 | Check | Actual output | Result |
 |---|---|---|
@@ -71,7 +83,7 @@ Run locally on 2026-10-03 at `55b31dc` with CPython 3.12.7. After the scorer fix
 | `uv run python scripts/audit_submission.py --history` | `audit passed: 0 findings (tracked tree and full history)` | pass |
 | `uv run python scripts/extract_packet.py --check` | no stale files, exit 0 | pass |
 | `node --experimental-strip-types scripts/gen_tool_goldens.mjs --check` (Node v22.22.2) | `goldens unchanged: 170 cases (generated with node v22.22.2, checked with node v22.22.2)` | pass |
-| `uv run pytest -m live -rs` (no `RUN_LIVE`) | `2 skipped`: `set RUN_LIVE=1 to run` | skipped, not passed |
+| `uv run pytest -m live -rs` (no `RUN_LIVE`) | `2 skipped`: `set RUN_LIVE=1 to run` | skipped, as expected |
 | `doctours-reply run` and `eval --suite dev` with `MODEL_*` unset | `error: missing required environment variables: MODEL_BASE_URL, MODEL_API_KEY, MODEL_ID`, exit 3 | pass (expected refusal) |
 | `doctours-reply eval --suite heldout_v1` without `--log-entry` | `error: heldout_v1 runs only through the schedule; pass --log-entry`, exit 2 | pass (expected refusal) |
 
@@ -102,22 +114,61 @@ Scripted coverage of the requested verification items (all in `tests/unit/` unle
 - **Held-out schedule.** RC-V-1 to RC-V-4 in `test_evaluation.py`: held-out suites need a log entry, a repeat run is refused and voided entries are kept, a comparison row needs its preregistration, and a results summary without a log entry is flagged. `tests/guards/test_heldout_log.py` checks the committed log, summaries and frozen hashes.
 - **Offline end-to-end eval.** A scripted run over official plus regression with 2 runs scores 24 cases per run and writes 48 case lines. This tests the runner's plumbing only; it measures nothing about a model.
 
+### Live gates
+
+Model `gpt-6-luna` with `reasoning_effort=none`, `json_schema` output and a 120 s timeout. Every eval ran with `--runs 3 --concurrency 2`, after `.env` was exported, with `MODEL_MAX_RETRIES=10` set for the run (section 5). Reports and traces are in the git-ignored `runs/`; only the held-out summary is committed.
+
+| Gate | Command | Build | Actual output | Result |
+|---|---|---|---|---|
+| Live smoke | `RUN_LIVE=1 uv run pytest -m live` | `5cc958d` | `2 passed, 513 deselected in 20.46s` | pass, run by the owner |
+| Official five | `eval --suite official` | `44a390d` | 15/15 valid, 15/15 escalation decisions correct | pass |
+| Regression | `eval --suite regression` | `25bb735` | 57/57 valid, no controller failures | ran |
+| Development | `eval --suite dev` | `25bb735` | 300/300 valid, no controller failures | ran |
+| Adversarial | `eval --suite adversarial` | `25bb735`, rerun at `3721b5e` | 123/123 valid both times, no controller failures | ran |
+| Held-out baseline | `eval --suite heldout_v1 --log-entry phase2-s0-baseline` | `3721b5e` | log entry #1; 294/294 valid, no controller failures | ran once, as scheduled |
+
+The iteration suites and the held-out set have no pass threshold in Phase 2; they measure S0.
+
+| Metric | Official | Regression | Dev | Adversarial (rerun) | Held-out |
+|---|---|---|---|---|---|
+| Valid after finalize | 15/15 | 57/57 | 300/300 | 123/123 | 294/294 |
+| Escalation decision correct | 15/15 | 35/57 | 256/300 | 101/123 | 240/294 |
+| Missed: unsupported action | 0/3 | 21/24 | 34/39 | 19/21 | 53/63 |
+| Missed: human request | 0/3 | 0/6 | 1/12 | 3/15 | 1/18 |
+| Unnecessary escalations | 0/9 | 1/27 | 9/249 | 0/87 | 0/213 |
+| Validation-stage escalations | 0/15 | 3/57 | 10/300 | 2/123 | 1/294 |
+| Grounded on first draft | 8/9 | 43/47 | 254/275 | 95/106 | 257/267 |
+| Tool selection | 11/15 | 20/51 | 73/174 | 37/87 | 167/294 |
+| Required facts | 14/21 | 3/9 | 58/72 | 17/21 | 56/78 |
+| Forbidden-fact replies | 0/15 | 0/57 | 0/300 | 0/123 | 6/294 |
+| Memory tool called when answering | 9/9 | 46/47 | 264/275 | 101/109 | 253/267 |
+| Model calls per item | 2.73 | 3.21 | 3.11 | 2.96 | 3.15 |
+| Prompt tokens per item | 107k | 126k | 122k | 116k | 124k |
+| Rate-limit retries | 0 | 2 | 330 | 49 | 219 |
+
+What the numbers say:
+
+- **The baseline's main weakness is unsupported actions.** It usually declines them with the legacy prompt's scripts instead of escalating as ledger A-02 requires: 53 of 63 were missed on the held-out set. Missed human requests are rare, and with the fixed validator there are no unnecessary escalations.
+- **Format and contract are not the problem.** Every reply is valid after finalizing. Only one adversarial item per run needed a repair before its output was valid.
+- **Validator false positives, fixed before the held-out run** (`3721b5e`).
+  - At `25bb735`, all 21 unnecessary escalations in dev and adversarial were validator false positives:
+    - negated or questioned package names ("I don't see a Sapphire package");
+    - corrections of patient amounts ("not $3,500", "I can't confirm $999");
+    - derived amounts ("$3,900 remains", "$200 cheaper");
+    - "Heva Clinic package" being read as a package named Clinic.
+  - Replaying every rejected draft from the three iteration suites through the fixed validator removes 55 rejections and adds none. A false Sapphire claim made alongside an honest sentence is still rejected.
+  - The live adversarial rerun took unnecessary escalations from 12/87 to 0/87, and correct escalation decisions from 88/123 to 101/123.
+  - Dev and regression were not rerun on `3721b5e`; their columns are from `25bb735`.
+- **The held-out forbidden-fact hits.**
+  - `hv1-017` (3 hits): a request that should have escalated was answered with the Silver deposit.
+  - `hv1-097` and `hv1-034` (3 hits between them): the reply named Gold with correct facts, which those labels forbid.
+- **Required URLs are often left out.** On the official set, the baseline answered both link-bearing messages correctly but left out the consultation and assessment links (0/6).
+- **Cost.** About 39k prompt tokens per call and 3.1 calls per item. The phase used about 118M prompt tokens and 311k completion tokens. That includes 4.8M in an aborted concurrency-4 attempt (section 5).
+
 ## 3. Checks not run, and why
 
-The model configuration is missing (`MODEL_BASE_URL`, `MODEL_API_KEY`, `MODEL_ID` are unset), so none of these live gates have been run or passed:
-
-| Gate | Command |
-|---|---|
-| Live smoke | `RUN_LIVE=1 uv run pytest -m live` |
-| Official five messages | `uv run doctours-reply eval --suite official --runs 3` |
-| Iteration suites | `uv run doctours-reply eval --suite dev,adversarial,regression --runs 3` |
-| Scheduled baseline measurement | `uv run doctours-reply eval --suite heldout_v1 --log-entry phase2-s0-baseline --runs 3` |
-| Judge scoring | add `--judge` once `JUDGE_*` names a different model |
-
-**Baseline measurements: none.** No live results exist, so there are no escalation, grounding, validity or cost numbers to report. The `phase2-s0-baseline` row has no log entry, because one is appended only when a configured run starts; the held-out set is still unused.
-
-Also not run:
-
+- **Judge scoring.** No `JUDGE_*` model is configured, so reply quality has not been judged; only the label-based scores above exist.
+- **Dev, regression and official reruns on `3721b5e`.** These were not repeated after the validator fix, to save about 46M tokens; the adversarial rerun and the offline replay cover the change. Official was last run at `44a390d`.
 - **The default `node`** here is v20.19.5, which rejects `--experimental-strip-types`. The golden check was run with Homebrew `node@22` (v22.22.2).
 - **Branch protection** is still not configured. The CI check on the head SHA is the gate.
 - **The fresh-clone and CPU-only gates** belong to later phases.
@@ -125,13 +176,21 @@ Also not run:
 ## 4. CI
 
 ```text
-$ gh run list --branch main --limit 1 --json headSha,conclusion   # run 37160378771
-[{"conclusion":"success","headSha":"828d0ad24c191b6897a2c0e351c7237fc4990492"}]
+$ gh run list --branch main --limit 1 --json headSha,conclusion   # run 37170871245
+[{"conclusion":"success","headSha":"3721b5e848406747eb9507e8482dacb03a031997"}]
 $ git rev-parse HEAD   # before this report update
-828d0ad24c191b6897a2c0e351c7237fc4990492
+3721b5e848406747eb9507e8482dacb03a031997
 ```
 
-Run 37159954054 also passed on `55b31dc`, and run 37160132778 passed on the first report commit, `ac66de2`.
+Every earlier commit in the phase also passed:
+
+- run 37159954054 on `55b31dc`;
+- run 37160132778 on `ac66de2`;
+- run 37160378771 on `828d0ad`;
+- run 37160419705 on `fca2078`;
+- run 37167900704 on `5cc958d`;
+- run 37168364819 on `44a390d`;
+- run 37168525351 on `25bb735`.
 
 All CI steps succeeded: Install, Lint, Types, Tests (network-free), Eval suites (dry run, no model calls), Audit tree and history. The CI result for this report commit is checked after it is pushed.
 
@@ -146,6 +205,11 @@ Commits in this phase, after `f70e26a`:
 - `55b31dc`: CI and docs.
 - `ac66de2`: this report.
 - `828d0ad`: the scorer fix.
+- `fca2078`: report update for the scorer fix.
+- `5cc958d`: `MODEL_REASONING_EFFORT`.
+- `44a390d` and `25bb735`: card redaction keeps UUIDs and hex digests.
+- `3721b5e`: grounding non-claims.
+- The held-out log entry, results summary and this update follow as a docs and results commit.
 
 ## 5. Deviations and decisions
 
@@ -158,7 +222,7 @@ Commits in this phase, after `f70e26a`:
   - `tests/guards/test_eval_sets.py` now fails if any text appears in two suites.
 - **Escalation scoring.** The official-message checks follow L759 but do not count sentences for escalations, per A-03.
 - **One current log entry per schedule row.** This is stricter than the plan. A rerun needs `--void-previous` with an infrastructure reason, and the voided row stays in the log.
-- **Cost** is reported as calls, retries, tokens and p50/p95 latency. There are no dollar figures until a model and its prices are fixed.
+- **Cost** is reported as calls, retries, tokens and p50/p95 latency. There are no dollar figures, because provider prices are not part of the repo.
 - **Argument correctness is part of tool selection.** Expected tool multisets carry clinic and package arguments.
 - **RC-G-10** builds its changed fixture in the test, a modified copy of the tool data, instead of shipping a second resource fixture.
 - **The `eval` command's import exception** (left open in Phase 1). `cli.py` imports `evaluation.cli` lazily, only for `eval`. The import guard allows exactly that import, and a subprocess test shows `run` never loads an evaluation module.
@@ -168,14 +232,21 @@ Commits in this phase, after `f70e26a`:
   - `check_case` now verifies weekday labels against the fixture, and all three held-out weekday labels pass.
   - The frozen set and its hash are unchanged, and the fix came before any held-out run.
 - **Provider checks for the modular steps** (route, decide) move to Phase 3, where those steps exist.
+- **`MODEL_REASONING_EFFORT`** (`5cc958d`). The model needs `reasoning_effort="none"` for tool calls through Chat Completions. The client validates the value against the SDK's allowed values, sends it only when set, and records it in each report's config.
+- **Card redaction kept identifiers whole** (`44a390d`, `25bb735`). The first live official run showed the Heva clinic UUID and a package UUID rewritten as card numbers in traces; a request digest followed. Their digit runs pass Luhn.
+  - UUIDs and 32+ character hex strings are now left alone, and card numbers are still redacted.
+  - Scores were unaffected, since the scorer reads the in-memory result. Official was rerun at `44a390d`.
+- **Rate limits.** Each call sends about 39k prompt tokens against a 2M tokens-per-minute limit.
+  - The first iteration attempt, at concurrency 4 with 3 retries, exhausted its retries on 429 responses and stopped with exit 4. Nothing was scored, and its 4.8M prompt tokens are counted in the total.
+  - All later runs used concurrency 2 and `MODEL_MAX_RETRIES=10`, set for the run rather than in `.env`. Every retry recovered.
+- **The validator fix came from iteration evidence** (`3721b5e`; section 2, live gates). It was made from dev and adversarial drafts and tested on them, before the held-out run. The tests use those drafts, plus near misses that must still fail.
+- **Held-out labels are left as frozen.** Three forbidden-fact hits come from labels that forbid naming Gold even when the facts are correct. Changing labels or the scorer after the run would make the measurement post hoc, so neither was changed.
 
 ## 6. Open questions and blockers
 
-- **Blocker: model configuration.** It needs three variables:
-  - `MODEL_BASE_URL`: an OpenAI-compatible endpoint with tool calls;
-  - `MODEL_API_KEY`;
-  - `MODEL_ID`: one fixed model, chosen under decision record 0003 and used for every system compared.
-- **Optional for judge scores:** `JUDGE_BASE_URL`, `JUDGE_API_KEY` and `JUDGE_MODEL_ID`. The judge must be a different model.
-- **Once configured,** the gates in section 3 run in the order listed, and the baseline measurement is recorded from them.
+- **No blockers.** The model is configured and every Phase 2 live gate has run.
+- **Optional for judge scores:** `JUDGE_BASE_URL`, `JUDGE_API_KEY` and `JUDGE_MODEL_ID`. The judge must be a different model from `gpt-6-luna`.
+- **For review: unsupported actions.** The legacy prompt's decline scripts conflict with ledger A-02's escalation rule. That conflict is the largest S0 gap (53/63 missed on held-out). The modular system targets it in Phase 3.
+- **For review: the strict Gold labels** in `hv1-097` and `hv1-034`. They stay as frozen for v1. Any held-out v2 could allow other packages when their facts are correct.
 - **Follow-up: the private companion's remote.** It has none yet; the owner creates it as a private repository.
 - **Open question: branch protection.** Should it require the CI check on `main`?

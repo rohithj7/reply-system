@@ -45,7 +45,9 @@ uv run doctours-reply eval --dry-run --suite all        # validate every case an
 uv run doctours-reply eval --suite dev,adversarial,regression --runs 3
 ```
 
-Reports go to `runs/eval-<run id>/`: `report.json`, `cases.jsonl` and `summary.md`, with Wilson 95% intervals. The official five messages (`--suite official`) are a sanity check only. The held-out set runs only through its schedule row, for example `--suite heldout_v1 --log-entry phase2-s0-baseline --runs 3`, which first appends an entry to `eval/results/heldout-log.md`.
+Reports go to `runs/eval-<run id>/`: `report.json`, `cases.jsonl` and `summary.md`, with Wilson 95% intervals. The official five messages (`--suite official`) are a sanity check only. The held-out set runs only through its schedule row, for example `--suite heldout_v1 --log-entry phase2-s0-baseline --runs 3`, which first appends an entry to `eval/results/heldout-log.md`. That row has been run; its results are in `eval/results/phase2-s0-baseline.md`.
+
+Each baseline model call sends about 39k prompt tokens, because the legacy prompt is long. Under a 2M tokens-per-minute limit, `--concurrency 2` with `MODEL_MAX_RETRIES=10` completed every run; `--concurrency 4` exhausted the default 3 retries on 429 responses.
 
 ## Develop
 
