@@ -51,6 +51,7 @@ Date: 2026-10-04. Last code commit: `3721b5e`. The held-out baseline ran on it, 
   | Held-out v1, frozen in commit `0039292` | `eval/heldout/v1.jsonl` | 98 |
 
   - The held-out sha256 is `667c618260abec2e0d3d0f730d4bc6536793a3a83e3412e8c0456e75f48c8464`.
+  - Phase 3 later extended both v0 suites to v1 by appending cases. The v0 files this report used are `git show 95e9f77:eval/dev/v0.jsonl` (sha256 `3e30a19277a669d1c28bf57b574036aa83eb12a89b15a7081a0e85093ba0962b`) and `git show 94286bf:eval/adversarial/v0.jsonl` (sha256 `e49065de9150f362c87895945022ff15c0f7c342cb9dc77b42b3d66fe026ef6d`). They are also the first 100 and 41 lines of the v1 files.
   - The extractor now also writes the official messages and expected replies into `eval/official/`. The runtime never reads them.
 - **CI and guidance.**
   - CI gains the step `uv run doctours-reply eval --dry-run --suite all` before the audit.
