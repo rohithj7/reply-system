@@ -31,6 +31,8 @@ class ChatResponse:
     model_id: str = ""
     finish_reason: str | None = None
     prompt_tokens: int = 0
+    cached_prompt_tokens: int = 0
+    """The part of `prompt_tokens` the provider served from its prompt cache, if reported."""
     completion_tokens: int = 0
     latency_ms: int = 0
     attempts: int = 1

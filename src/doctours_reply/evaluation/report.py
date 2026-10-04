@@ -85,6 +85,7 @@ def system_metrics(scores: Sequence[CaseScore]) -> dict[str, Any]:
             "model_calls_per_item": _mean([s.model_calls for s in scores]),
             "retries_total": sum(s.retries for s in scores),
             "prompt_tokens_per_item": _mean([s.prompt_tokens for s in scores]),
+            "cached_prompt_tokens_per_item": _mean([s.cached_prompt_tokens for s in scores]),
             "completion_tokens_per_item": _mean([s.completion_tokens for s in scores]),
             "latency_ms_p50": percentile([s.latency_ms for s in scores], 50),
             "latency_ms_p95": percentile([s.latency_ms for s in scores], 95),

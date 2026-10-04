@@ -23,6 +23,7 @@ class ModelCall(_Record):
     tool_calls: list[dict[str, str]]
     finish_reason: str | None
     prompt_tokens: int
+    cached_prompt_tokens: int = 0
     completion_tokens: int
     latency_ms: int
     attempts: int

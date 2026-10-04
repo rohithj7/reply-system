@@ -176,6 +176,7 @@ def _call(
             ],
             finish_reason=response.finish_reason,
             prompt_tokens=response.prompt_tokens,
+            cached_prompt_tokens=response.cached_prompt_tokens,
             completion_tokens=response.completion_tokens,
             latency_ms=response.latency_ms,
             attempts=response.attempts,

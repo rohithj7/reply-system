@@ -25,7 +25,11 @@ def _completion(content: str = "{}") -> Any:
     message = SimpleNamespace(content=content, tool_calls=None)
     return SimpleNamespace(
         choices=[SimpleNamespace(message=message, finish_reason="stop")],
-        usage=SimpleNamespace(prompt_tokens=11, completion_tokens=3),
+        usage=SimpleNamespace(
+            prompt_tokens=11,
+            completion_tokens=3,
+            prompt_tokens_details=SimpleNamespace(cached_tokens=8),
+        ),
         model="m1-2026",
     )
 
@@ -103,6 +107,7 @@ def test_transient_failures_are_retried_with_bounded_backoff(error: Exception) -
     response = client.complete(_request())
     assert (response.content, response.attempts, response.model_id) == ("ok", 3, "m1-2026")
     assert (response.prompt_tokens, response.completion_tokens) == (11, 3)
+    assert response.cached_prompt_tokens == 8
     assert sleeps == [1.0, 2.0]
 
 

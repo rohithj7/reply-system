@@ -62,6 +62,7 @@ class CaseScore:
     completion_tokens: int
     latency_ms: int
     official: dict[str, bool] | None = None
+    cached_prompt_tokens: int = 0
     judge: dict[str, Any] | None = None
 
     def to_json(self) -> dict[str, Any]:
@@ -115,6 +116,7 @@ def score_case(
         completion_tokens=sum(call.completion_tokens for call in trace.model_calls),
         latency_ms=sum(call.latency_ms for call in trace.model_calls),
         official=official_checks(case.text, reply, expected, fixture) if expected else None,
+        cached_prompt_tokens=sum(call.cached_prompt_tokens for call in trace.model_calls),
     )
 
 

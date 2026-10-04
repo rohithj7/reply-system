@@ -186,12 +186,14 @@ def _to_response(completion: Any, started: float, attempts: int) -> ChatResponse
         if getattr(call, "function", None) is not None
     )
     usage = getattr(completion, "usage", None)
+    details = getattr(usage, "prompt_tokens_details", None)
     return ChatResponse(
         content=getattr(message, "content", None),
         tool_calls=calls,
         model_id=getattr(completion, "model", None) or "",
         finish_reason=choices[0].finish_reason if choices else None,
         prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+        cached_prompt_tokens=getattr(details, "cached_tokens", 0) or 0,
         completion_tokens=getattr(usage, "completion_tokens", 0) or 0,
         latency_ms=latency,
         attempts=attempts,
