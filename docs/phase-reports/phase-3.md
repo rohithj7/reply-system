@@ -395,6 +395,8 @@ Every eval report's config records the sha256 of each suite it ran. A v1 file st
 
 CI runs on each pushed head. `65f14e7` covers `0816652` to `65f14e7`, and `c6791a1` covers `decfe2f` to `c6791a1`; both succeeded. The intermediate commits had no CI run of their own. At the final checked commit, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"c6791a171e6be9f286863613528dcde5de25c945"}]`, and `git rev-parse HEAD` returned `c6791a171e6be9f286863613528dcde5de25c945`.
 
+This section and the review packet were committed on top of `c6791a1` as `136ddee`, docs only. There, the same command returned `[{"conclusion":"success","headSha":"136ddee9be8a7c000c54ba991013e2aef6662742"}]`, matching `git rev-parse HEAD`.
+
 ### Remaining limitations
 
 - **Two validator false rejections remain.** Both are shared by S0 and S1, and neither is loosened without new negative controls.
