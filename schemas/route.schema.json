@@ -1,0 +1,116 @@
+{
+  "$defs": {
+    "EscalationChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "human_requested",
+            "unsupported_payment_action",
+            "unsupported_money_movement",
+            "unsupported_clinic_contact",
+            "unsupported_date_hold",
+            "unsupported_booking_change",
+            "unsupported_document_action",
+            "unsupported_other"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "reason": {
+          "description": "12 words or fewer, no digits: what the patient asked for.",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "reason"
+      ],
+      "title": "EscalationChoice",
+      "type": "object"
+    },
+    "Intent": {
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "maxLength": 200,
+          "title": "Summary",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "policy_question",
+            "information_request",
+            "action_request",
+            "preference_statement",
+            "human_request",
+            "pause",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "supported_by": {
+          "description": "For action_request: tool:<name>, self_service:<link or page>, rule:<policy id>, or 'none'. For every other kind: 'n/a'.",
+          "title": "Supported By",
+          "type": "string"
+        }
+      },
+      "required": [
+        "summary",
+        "kind",
+        "supported_by"
+      ],
+      "title": "Intent",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "intents": {
+      "items": {
+        "$ref": "#/$defs/Intent"
+      },
+      "maxItems": 6,
+      "minItems": 1,
+      "title": "Intents",
+      "type": "array"
+    },
+    "skills": {
+      "description": "Skill ids from the catalog.",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 4,
+      "title": "Skills",
+      "type": "array"
+    },
+    "outcome": {
+      "enum": [
+        "continue",
+        "escalate"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "escalation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EscalationChoice"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "intents",
+    "skills",
+    "outcome"
+  ],
+  "title": "RouteDecision",
+  "type": "object"
+}

@@ -101,7 +101,33 @@ def test_no_tool_runs_after_close(fixture: Fixture) -> None:
     executor.close()
     with pytest.raises(ExecutorClosedError):
         executor.execute("c1", "getAllClinics", {})
+    with pytest.raises(ExecutorClosedError):
+        executor.commit_memory("memory", {"keyConcerns": "cost"})
     assert executor.observations == []
+
+
+def test_a_tool_outside_the_allowlist_is_refused_without_spending_budget(
+    fixture: Fixture,
+) -> None:
+    executor = _executor(fixture, max_calls=1)
+    allowed = frozenset({"getAllClinics"})
+    refused = executor.execute("c1", "getSavedClinics", {"userId": USER_ID}, allowed=allowed)
+    assert (refused.status, refused.executed) == ("tool_not_loaded", False)
+    assert executor.calls_left == 1
+    assert executor.execute("c2", "getAllClinics", {}, allowed=allowed).status == "ok"
+
+
+def test_the_memory_commit_runs_once_outside_the_budget_rc_w_8(fixture: Fixture) -> None:
+    executor = _executor(fixture, max_calls=0)
+    first = executor.commit_memory("memory", {"keyConcerns": "cost"})
+    second = executor.commit_memory("again", {"keyConcerns": "time"})
+    assert (first.status, first.args, first.result) == (
+        "ok",
+        {"memory": {"keyConcerns": "cost"}},
+        {"success": True},
+    )
+    assert second.status == "duplicate_write"
+    assert executor.executed_writes == ("memory",)
 
 
 def test_results_do_not_alias_the_fixture(fixture: Fixture) -> None:

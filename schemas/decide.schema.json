@@ -1,0 +1,143 @@
+{
+  "$defs": {
+    "EscalationChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "human_requested",
+            "unsupported_payment_action",
+            "unsupported_money_movement",
+            "unsupported_clinic_contact",
+            "unsupported_date_hold",
+            "unsupported_booking_change",
+            "unsupported_document_action",
+            "unsupported_other"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "reason": {
+          "description": "12 words or fewer, no digits: what the patient asked for.",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "reason"
+      ],
+      "title": "EscalationChoice",
+      "type": "object"
+    },
+    "EscalationReview": {
+      "additionalProperties": false,
+      "properties": {
+        "needed": {
+          "title": "Needed",
+          "type": "boolean"
+        },
+        "why": {
+          "maxLength": 200,
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "needed",
+        "why"
+      ],
+      "title": "EscalationReview",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "PlannedCall": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z0-9_.-]{1,32}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Arguments",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "arguments"
+      ],
+      "title": "PlannedCall",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "escalation_review": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EscalationReview"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Required on the first decide step."
+    },
+    "next": {
+      "enum": [
+        "call_tools",
+        "load_skills",
+        "answer",
+        "clarify",
+        "escalate"
+      ],
+      "title": "Next",
+      "type": "string"
+    },
+    "calls": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PlannedCall"
+      },
+      "maxItems": 8,
+      "title": "Calls",
+      "type": "array"
+    },
+    "skills_to_add": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 3,
+      "title": "Skills To Add",
+      "type": "array"
+    },
+    "escalation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EscalationChoice"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "next"
+  ],
+  "title": "ActionDecision",
+  "type": "object"
+}

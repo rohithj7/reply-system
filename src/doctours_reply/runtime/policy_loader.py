@@ -79,7 +79,10 @@ class PolicyMeta(_Meta):
         if any(not re.match(r"^(packet|assignment):L\d+(-L\d+)?$", s) for s in self.sources):
             raise ValueError("sources look like packet:L12-L34 or assignment:L7")
         for pattern in self.forbidden_patterns:
-            re.compile(pattern)
+            try:
+                re.compile(pattern)
+            except re.error as exc:
+                raise ValueError(f"forbidden pattern {pattern!r}: {exc}") from exc
         return self
 
 
