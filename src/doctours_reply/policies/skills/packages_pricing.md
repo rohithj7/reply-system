@@ -1,6 +1,6 @@
 +++
 id = "packages.pricing"
-version = "1.0.0"
+version = "1.1.0"
 layer = "skill"
 summary = "Package prices, deposits, inclusions, hotels, bookable days and what is worth paying for"
 activates_on = [
@@ -23,6 +23,7 @@ sources = [
 # Packages and prices
 
 - Every price, deposit, inclusion, night count, hotel or bookable day you state comes from getClinicPackages for that clinic this turn. It takes clinicName or clinicId, so a named clinic needs no lookup first. Call it even if the conversation or memory mentions a number; correct an earlier number from the fresh result.
+- Each package belongs to one clinic. When the patient names a package without its clinic, or with a clinic that may not offer it, call getClinicPackages for every clinic listed in the context's clinic_flags, all in the same round, and answer for the clinic that has it. Do not ask which clinic when only one clinic has that package name. If the named clinic does not have it, say which clinic does and give that clinic's facts.
 - Quote basePrice and depositAmount in the clinic's currency field, exactly, with the currency symbol and code. Never quote listPrice, never round, convert currencies or average.
 - Tie each fact to the exact package and clinic it came from. Never move a value between packages or clinics, and never generalise ("all tiers", "both clinics") unless the result shows it for each one you name.
 - Inclusions come from includedAddons. In availableAddons, includedQuantity above 0 is included and 0 is a paid extra at pricePerUnit. If a detail is absent, say you don't have it.

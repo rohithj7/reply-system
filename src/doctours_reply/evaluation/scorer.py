@@ -231,7 +231,12 @@ def has_fact(response: str, fact: FactLabel) -> bool:
     if fact.attribute == WEEKDAY_ATTRIBUTE:
         return _mentions_weekday(response, str(fact.value))
     if isinstance(fact.value, str):
-        phrase = rf"(?<!\w){re.escape(_normalized(fact.value))}s?(?!\w)"
+        value = _normalized(fact.value)
+        if counted := re.fullmatch(r"(\d+) (\w+)", value):
+            number, unit = counted.groups()
+            phrase = rf"(?<!\w){number}(?: \w+)? {re.escape(unit)}s?(?!\w)"
+        else:
+            phrase = rf"(?<!\w){re.escape(value)}s?(?!\w)"
         return re.search(phrase, _normalized(response)) is not None
     return re.search(rf"\b{re.escape(fact.entity)}\b", response, re.IGNORECASE) is not None
 

@@ -84,6 +84,8 @@ def test_label_consistency_is_checked(fixture: Fixture) -> None:
         ("Gold includes three nights at the hotel.", "3 night", True),
         ("Gold includes a 3-night hotel stay.", "3 night", True),
         ("That comes to 13 nights in total.", "3 night", False),
+        ("Gold includes 4 hotel nights.", "4 night", True),
+        ("Gold has 4 extra paid add-on nights.", "4 night", False),
         ("Your doctor is Dr. Sibel's team lead.", "Sibel", True),
         ("Ask the Sibelius quartet.", "Sibel", False),
     ],
