@@ -10,6 +10,8 @@ CARD_NUMBER = "[CARD_NUMBER]"
 CARD_FRAGMENT = "[CARD_FRAGMENT]"
 
 _PAN = re.compile(r"(?<![\d.,])\d(?:[ -]?\d){12,18}(?![\d,]|\.\d)")
+# Clinic, package and patient IDs are UUIDs whose digit runs can pass the Luhn check.
+_UUID = re.compile(r"\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b", re.IGNORECASE)
 _FRAGMENTS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
@@ -40,10 +42,12 @@ def _luhn_valid(digits: str) -> bool:
 
 def redact_card_data(text: str) -> RedactedText:
     removed: list[str] = []
+    uuids = [m.span() for m in _UUID.finditer(text)]
 
     def pan(match: re.Match[str]) -> str:
         digits = re.sub(r"\D", "", match.group())
-        if not _luhn_valid(digits):
+        in_uuid = any(start < match.end() and match.start() < end for start, end in uuids)
+        if in_uuid or not _luhn_valid(digits):
             return match.group()
         removed.extend((digits, digits[-4:]))
         return CARD_NUMBER

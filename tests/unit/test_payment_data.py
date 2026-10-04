@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from doctours_reply.runtime.payment_data import (
@@ -6,6 +8,7 @@ from doctours_reply.runtime.payment_data import (
     echoes_card_data,
     redact_card_data,
 )
+from doctours_reply.runtime.refs import Fixture
 
 
 @pytest.mark.parametrize(
@@ -61,6 +64,14 @@ def test_non_card_numbers_are_kept(text: str) -> None:
     redacted = redact_card_data(text)
     assert redacted.text == text
     assert redacted.card_digits == ()
+
+
+def test_uuids_are_kept_even_when_their_digits_pass_luhn(fixture: Fixture) -> None:
+    clinic_id = "11111111-1111-4111-8111-111111111111"
+    redacted = redact_card_data(f"select {clinic_id} and charge 4242424242424242")
+    assert redacted.text == f"select {clinic_id} and charge {CARD_NUMBER}"
+    strings = [fixture.tool_data.model_dump_json(), json.dumps(dict(fixture.constants))]
+    assert all(redact_card_data(s).text == s for s in strings)
 
 
 def test_echo_detection_ignores_spacing_and_word_boundaries() -> None:
