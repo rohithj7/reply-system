@@ -126,7 +126,12 @@ def test_repair_instructions_carry_the_correct_value_and_source(fixture: Fixture
             ["unknown_package"],
         ),
         ((HEVA,), "Anything else?", "I don't see a Diamond package.", ["unknown_package"]),
-        ((HEVA,), "Does Hakan have Silver?", "Dr. Hakan Clinic doesn’t have a Silver package.", []),
+        (
+            (HEVA, HAKAN),
+            "Does Hakan have Silver?",
+            "Dr. Hakan Clinic doesn’t have a Silver package.",
+            [],
+        ),
         (
             (HEVA,),
             "Does Hakan have Silver?",
@@ -153,13 +158,117 @@ def test_repair_instructions_carry_the_correct_value_and_source(fixture: Fixture
             "Gold is $4,500, with a $600 deposit, so $3,900 remains after the deposit.",
             [],
         ),
-        ((HEVA, HAKAN), "Which is cheaper, Sapphire or Silver?", "Silver is $200 cheaper.", []),
-        ((HEVA, HAKAN), "Which is cheaper?", "Gold is $200 cheaper.", ["wrong_value"]),
+        ((HEVA, HAKAN), "Sapphire or Silver?", "Silver is $200 cheaper than Sapphire.", []),
+        (
+            (HEVA, HAKAN),
+            "Sapphire or Silver?",
+            "Heva’s Silver is $3,000, Dr. Hakan’s Sapphire is $3,200, so Silver is $200 cheaper.",
+            [],
+        ),
         ((HEVA,), "How much is Gold?", "Gold is $3,900.", ["wrong_value"]),
         ((HEVA,), "Silver price?", "Silver is a Heva Clinic package, priced at $3,000 USD.", []),
     ],
 )
 def test_corrections_absences_and_differences_are_not_claims(
+    fixture: Fixture,
+    calls: tuple[tuple[str, dict[str, Any]], ...],
+    message: str,
+    response: str,
+    codes: list[str],
+) -> None:
+    assert _codes(response, _evidence(fixture, *calls), message) == codes
+
+
+@pytest.mark.parametrize(
+    ("calls", "message", "response", "codes"),
+    [
+        # False denials of observed facts.
+        ((HEVA,), "Gold?", "Heva doesn't have a Gold package.", ["false_denial"]),
+        ((HEVA,), "Gold?", "I don't see a Gold package.", ["false_denial"]),
+        ((HEVA,), "Is Gold $4,500?", "Gold is not $4,500.", ["false_denial"]),
+        ((HEVA,), "Gold?", "Gold isn't offered at Heva.", ["false_denial"]),
+        ((HEVA,), "Gold at $1,000?", "I can’t quote Gold at $1,000.", []),
+        ((HEVA,), "Gold?", "I don’t have the other inclusions for Gold to confirm.", []),
+        ((HEVA,), "Silver?", "I don't have Silver's airport-transfer details.", []),
+        ((HEVA,), "Silver or Gold?", "I meant Silver, not Gold.", []),
+        ((HEVA,), "Sapphire?", "I don’t yet have a Sapphire package selection saved.", []),
+        ((), "Gold?", "I need to confirm which clinic’s Gold package you mean.", []),
+        (
+            (HEVA,),
+            "Silver?",
+            "Dr. Hakan Clinic doesn’t have a Silver package.",
+            ["unverified_denial"],
+        ),
+        (
+            (),
+            "Sapphire?",
+            "Dr. Hakan Clinic doesn't have a Sapphire package.",
+            ["unverified_denial"],
+        ),
+        # Negations that do not govern the claim.
+        ((HEVA,), "Platinum?", "No doubt Heva has a Platinum package.", ["unknown_package"]),
+        ((HEVA,), "Is Gold $3,500?", "There's no question Gold is $3,500.", ["wrong_value"]),
+        ((HEVA,), "Is Gold $3,500?", "Not only is Gold $3,500, it has 4 nights.", ["wrong_value"]),
+        ((HEVA,), "Platinum?", "Heva has a Platinum package, right?", ["unknown_package"]),
+        # Wrong arithmetic, operands from another package, wrong direction.
+        (
+            (HEVA,),
+            "Left?",
+            "Gold is $4,500 with a $600 deposit, so $4,000 remains.",
+            ["unverified_calculation"],
+        ),
+        (
+            (HEVA,),
+            "Left?",
+            "Silver has $3,900 remaining after the deposit.",
+            ["unverified_calculation"],
+        ),
+        ((HEVA,), "Left?", "Silver's remaining balance is $1,500.", ["unverified_calculation"]),
+        ((HEVA,), "Left?", "Gold's remaining balance is $4,500.", ["unverified_calculation"]),
+        ((HEVA,), "Left?", "So $3,900 remains.", ["unverified_calculation"]),
+        ((HEVA, HAKAN), "Cheaper?", "Silver is $200 cheaper.", ["unverified_calculation"]),
+        ((HEVA, HAKAN), "Cheaper?", "Gold is $200 cheaper.", ["unverified_calculation"]),
+        (
+            (HEVA, HAKAN),
+            "Cheaper?",
+            "Sapphire is $200 cheaper than Silver.",
+            ["unverified_calculation"],
+        ),
+        (
+            (HEVA, HAKAN),
+            "Cheaper?",
+            "Silver is $300 cheaper than Sapphire.",
+            ["unverified_calculation"],
+        ),
+        ((HEVA, HAKAN), "More?", "Gold is $1,300 more than Sapphire.", []),
+        ((HEVA,), "More?", "Gold's deposit is $100 more than Silver's.", []),
+        ((HEVA,), "Gap?", "The difference between Silver and Gold is $1,500.", []),
+        ((HEVA,), "Left?", "Gold is $4,500 with a $600 deposit, leaving $3,900.", []),
+        # Currency mismatches.
+        ((HEVA,), "Gold?", "Gold is €4,500.", ["wrong_value"]),
+        (
+            (HEVA,),
+            "Left?",
+            "Gold is $4,500 with a $600 deposit, so €3,900 remains.",
+            ["unverified_calculation"],
+        ),
+        # False claims next to honest statements.
+        ((HEVA,), "Confirm $999?", "I can't confirm $999, but Gold is $999.", ["wrong_value"]),
+        (
+            (HEVA,),
+            "Platinum?",
+            "I don't see a Platinum package, but Silver is $3,500.",
+            ["wrong_value"],
+        ),
+        (
+            (HEVA,),
+            "Platinum?",
+            "I don't see a Platinum package; Heva has a Diamond package.",
+            ["unknown_package"],
+        ),
+    ],
+)
+def test_denials_negations_and_calculations_must_be_grounded(
     fixture: Fixture,
     calls: tuple[tuple[str, dict[str, Any]], ...],
     message: str,
