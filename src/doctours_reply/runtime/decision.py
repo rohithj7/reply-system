@@ -61,7 +61,9 @@ class RouteDecision(_Decision):
 
 
 class PlannedCall(_Decision):
-    id: str = Field(pattern=r"^[A-Za-z0-9_.-]{1,32}$")
+    id: str = Field(
+        pattern=r"^[A-Za-z0-9_.-]{1,32}$", description="Unique among this decision's calls."
+    )
     name: str
     arguments: dict[str, JsonValue]
 

@@ -55,6 +55,7 @@
       "additionalProperties": false,
       "properties": {
         "id": {
+          "description": "Unique among this decision's calls.",
           "pattern": "^[A-Za-z0-9_.-]{1,32}$",
           "title": "Id",
           "type": "string"
