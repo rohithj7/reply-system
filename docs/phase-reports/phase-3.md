@@ -183,7 +183,7 @@ There was no independent judge or human review, so these are unverified:
 
 `gh run list --branch main --limit 1 --json headSha,conclusion` at the held-out run commit returned `[{"conclusion":"success","headSha":"1e646b6f6b1b23b026cc586e7d95ac742cb30c2e"}]`, and `git rev-parse HEAD` returned `1e646b6f6b1b23b026cc586e7d95ac742cb30c2e`. CI also passed on every Phase 3 code commit: `c34664d`, `05fcf1b`, `94286bf`, `1d960a4`, `a261ec3`, `0cd27b7`, `7b6cf58`, `fe3e8de` and `bb7d8b2`.
 
-This report and the held-out results are a docs and results commit on top of `1e646b6`. Its CI result is recorded in the commit after it.
+This report and the held-out results were committed on top of `1e646b6` as `533d947`, docs and results only. There, the same command returned `[{"conclusion":"success","headSha":"533d947ce96bfe70668e016515b9894b41fd256a"}]`, matching `git rev-parse HEAD`.
 
 ## 5. Deviations and decisions
 
