@@ -109,8 +109,10 @@ def run_modular(
     evidence = build_evidence(
         executor.observations,
         clinics=ctx.fixture.tool_data.clinics,
+        packages=ctx.fixture.tool_data.packages,
         static_facts=loaded.facts,
         static_links=loaded.static_links,
+        deposit_links=loaded.deposit_links,
         assessment_cues=loaded.assessment_link_cues,
         shown_text=" ".join(str(m["content"]) for m in messages),
     )

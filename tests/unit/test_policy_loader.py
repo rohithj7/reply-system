@@ -52,6 +52,7 @@ def test_every_shipped_module_parses_with_sources() -> None:
         ({"sources": ["somewhere"]}, "sources look like"),
         ({"forbidden_patterns": ["(unclosed"]}, "forbidden pattern"),
         ({"assessment_link_cues": ["(unclosed"]}, "assessment link cue"),
+        ({"deposit_links": ["assessment"]}, "deposit_links"),
         ({"surprise": "field"}, "invalid front matter"),
     ],
 )

@@ -58,6 +58,8 @@ LEGACY_STATIC_LINKS: Final = (
     "https://www.doctours.com/consultation",
 )
 """Static links the legacy prompt declares (packet L1453, L1462, L1467)."""
+LEGACY_DEPOSIT_LINKS: Final = ("payment", "checkout")
+"""The getPaymentLink types the legacy prompt sends, most specific first (packet L1308-L1315)."""
 
 LEGACY_FACTS: Final = (
     Fact(
@@ -225,8 +227,10 @@ def _evidence(ctx: TurnContext, executor: Executor, messages: list[Message]) -> 
     return build_evidence(
         executor.observations,
         clinics=ctx.fixture.tool_data.clinics,
+        packages=ctx.fixture.tool_data.packages,
         static_facts=LEGACY_FACTS,
         static_links=LEGACY_STATIC_LINKS,
+        deposit_links=LEGACY_DEPOSIT_LINKS,
         shown_text=shown,
     )
 

@@ -36,6 +36,19 @@ _LINK_REQUESTS = {
     "assessment": "The policy {policy} answers this request with the patient's assessment "
     "link: paste {url} exactly, alone on the last line.",
 }
+_DECLINED_LINK = re.compile(
+    r"\b(?:don[’']?t|do not|no need to)\s+(?:send|share|give|need|want)(?:\s+(?:me|us|it))?"
+    r"(?:\s+(?:the|a|any|that|my|your))?(?:\s+[\w.]+){0,2}?\s+"
+    r"(?:(checkout|payment|deposit|assessment)\s+)?links?\b",
+    re.IGNORECASE,
+)
+_DECLINED_KINDS = {"assessment": ("assessment",), "": ("payment", "checkout", "assessment")}
+_STILL_DECIDING = re.compile(
+    r"\b(?:still (?:comparing|weighing|deciding|choosing)"
+    r"|(?:before|once|until) I (?:settle|decide|choose|pick)"
+    r"|(?:haven[’']?t|have not) (?:decided|chosen))\b",
+    re.IGNORECASE,
+)
 
 
 def check_answer(draft: Draft, evidence: Evidence, message: RedactedText) -> list[Violation]:
@@ -150,27 +163,42 @@ def _url_violations(
 
 
 def _missing_links(response: str, evidence: Evidence, message: str) -> list[Violation]:
-    """A ready link the request calls for goes in the reply: the payment link for the
-    patient's one package, else the checkout link for their one clinic, else, when no deposit
-    link was asked for, the assessment link for a request a loaded policy answers with it.
-    The patient's package or clinic is their selection or the one the message names (a
-    named package names its clinic), provided the message names no other."""
-    packages = evidence.packages()
-    names = {*packages, *(link.name for link in evidence.links if link.kind == "payment")}
-    named = {n for n in names if _names(message, n)}
-    clinics = {c for token, c in clinic_tokens(evidence).items() if _names(message, token)}
-    clinics |= {f.clinic_id for n in named for f in packages.get(n, []) if f.clinic_id}
+    """A ready link the request calls for goes in the reply. Its kind and subject come from
+    the request and the active policy, never from which links a tool returned: a required
+    link no tool returned is the controller's to fetch, and no other link stands in for it.
 
-    def chosen(link: ReadyLink, subject: str | None, mentioned: set[str]) -> bool:
+    The patient's package is the one package the message names, else their selection; their
+    clinic is the one clinic the message names or whose package it names, else their
+    selection. A patient still deciding has neither. The deposit link is the first of the
+    policy's `deposit_links` that fits: "payment" needs a package, "checkout" a clinic. A
+    request a loaded policy answers with the assessment link needs it, unless a deposit link
+    answers the patient's package. A link the patient asks not to be sent is never required."""
+    declined = {
+        kind
+        for found in _DECLINED_LINK.finditer(message)
+        for kind in _DECLINED_KINDS.get((found.group(1) or "").lower(), ("payment", "checkout"))
+    }
+    named = {n for n in evidence.package_clinics if _names(message, n)}
+    clinics = {c for token, c in clinic_tokens(evidence).items() if _names(message, token)}
+    clinics |= {c for n in named for c in evidence.package_clinics[n]}
+    deciding = _STILL_DECIDING.search(message) is not None
+    selection = evidence.selection
+    package = not deciding and (len(named) == 1 or not named and "selectedPackageId" in selection)
+    clinic = not deciding and (len(clinics) == 1 or not clinics and "selectedClinicId" in selection)
+    kind = next(
+        (k for k in evidence.deposit_links if (package if k == "payment" else clinic)), None
+    )
+    kind = None if kind in declined else kind
+    mentioned = named if kind == "payment" else clinics
+
+    def chosen(link: ReadyLink) -> bool:
+        subject = link.name if link.kind == "payment" else link.clinic_id
         return mentioned <= {subject} and (link.selected or subject in mentioned)
 
-    required = [k for k in evidence.links if k.kind == "payment" and chosen(k, k.name, named)]
-    required = required or [
-        k for k in evidence.links if k.kind == "checkout" and chosen(k, k.clinic_id, clinics)
-    ]
+    required = [k for k in evidence.links if k.kind == kind and chosen(k)]
     cue = next((ref for ref, cue in evidence.assessment_cues if cue.search(message)), None)
-    if not required and not evidence.deposit_link_asked and cue:
-        required = [k for k in evidence.links if k.kind == "assessment"]
+    if cue and "assessment" not in declined and not (package and kind):
+        required += [k for k in evidence.links if k.kind == "assessment"]
     sent = set(urls_in(response))
     return [
         Violation(

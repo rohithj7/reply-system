@@ -220,7 +220,7 @@ def test_a_tool_outside_the_loaded_policies_waits_for_its_skill_rc_pl_4() -> Non
     ]
     assert "getPaymentLink" not in _tools(client.requests[1])
     after_load = _state(client.requests[3])
-    assert "[policy payments.links v1.3.1]" in after_load["policies"]
+    assert "[policy payments.links v1.4.0]" in after_load["policies"]
     assert "getPaymentLink" in _tools(client.requests[3])
     assert after_load["budget"] == {"rounds_left": 2, "calls_left": 7, "skill_loads_left": 0}
     assert _purposes(result) == [

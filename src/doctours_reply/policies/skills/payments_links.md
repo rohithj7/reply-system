@@ -1,6 +1,6 @@
 +++
 id = "payments.links"
-version = "1.3.1"
+version = "1.4.0"
 layer = "skill"
 summary = "How and where the patient pays the deposit, and which deposit link to send"
 activates_on = [
@@ -17,6 +17,7 @@ allowed_tools = [
   "getClinicPackages",
   "getLatestAssessment",
 ]
+deposit_links = ["payment", "checkout"]
 assessment_link_cues = [
   '\bassessment\b[^.?!]*\b(?:pay|paying|book|booking|deposit|checkout)\b',
   '\b(?:pay|paying|book|booking|deposit|checkout)\b[^.?!]*\bassessment\b',

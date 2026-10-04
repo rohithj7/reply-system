@@ -61,6 +61,8 @@ class PolicyMeta(_Meta):
     allowed_tools: list[str] = []
     static_links: list[str] = []
     forbidden_patterns: list[str] = []
+    deposit_links: list[Literal["payment", "checkout"]] = []
+    """The getPaymentLink types this module sends, most specific first."""
     assessment_link_cues: list[str] = []
     """Patterns for requests this module answers with the patient's assessment link."""
     facts: list[FactSpec] = []
@@ -158,6 +160,10 @@ class LoadedPolicies:
             for p in self.policies
             for pattern in p.meta.forbidden_patterns
         )
+
+    @property
+    def deposit_links(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(t for p in self.policies for t in p.meta.deposit_links))
 
     @property
     def assessment_link_cues(self) -> tuple[tuple[str, re.Pattern[str]], ...]:
