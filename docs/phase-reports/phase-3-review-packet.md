@@ -2,7 +2,7 @@
 
 Date: 2026-10-04. This packet is for human semantic review of S1 (the modular system). It holds 20 S1 traces from the development and adversarial suites. No held-out case, label or output is included.
 
-**Nobody has reviewed these items yet.** Every human-review field is blank. The coding agent chose the items and built the packet from saved traces; that is not human or independent validation. The automated findings are the scorer's labelled checks and the grounding validator's output. They cannot tell whether a reply is complete, relevant or well judged.
+**ChatGPT has reviewed these 20 traces; no human has.** That review is an AI review of selected examples. It is not a human review, and 20 chosen traces do not measure the suites. This packet does not record its findings, and every human-review field is still blank. The coding agent chose the items and built the packet from saved traces; that is not human or independent validation. The automated findings are the scorer's labelled checks and the grounding validator's output. They cannot tell whether a reply is complete, relevant or well judged.
 
 **How the items were chosen.**
 - The categories are ordinary answers, multiple questions, pricing and deposits, assessment and payment links, supported versus unsupported actions, and validator failures. The packet also includes the five failure categories fixed at the Phase 3 closeout:

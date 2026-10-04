@@ -2,7 +2,7 @@
 
 Date: 2026-10-04. Last code commit: `bb7d8b2`. Docs commit `f8cacb7` and pre-registration commit `1e646b6` follow it. The scheduled held-out comparison ran at `1e646b6`. The Phase 2 closeout is in `phase-2-closeout.md`.
 
-Sections 1 to 6 describe the build measured at `1e646b6`. Section 7 is the closeout, which changed behavior after that measurement; its final checked commit is `072ef47`, after a post-review patch. The semantic-review packet is `phase-3-review-packet.md`.
+Sections 1 to 6 describe the build measured at `1e646b6`. Section 7 is the closeout, which changed behavior after that measurement; its final checked commit is `ae39ee3`, after a post-review patch and a link-delivery patch. The semantic-review packet is `phase-3-review-packet.md`.
 
 **Evidence comes in two kinds, labelled throughout.**
 
@@ -209,7 +209,7 @@ This report and the held-out results were committed on top of `1e646b6` as `533d
 
 ## 6. Open questions and blockers
 
-- **Semantic quality is unverified.** No judge or human review was run, so goal coverage, policy correctness and tone are measured only through labelled proxies: required and forbidden facts and URLs, escalation, tool selection and memory labels. These cannot tell a relevant, complete answer from one that only contains the right facts. The closeout's `phase-3-review-packet.md` is prepared for that review and has not been reviewed.
+- **Semantic quality is unverified.** No judge or human review was run, so goal coverage, policy correctness and tone are measured only through labelled proxies: required and forbidden facts and URLs, escalation, tool selection and memory labels. These cannot tell a relevant, complete answer from one that only contains the right facts. The closeout's `phase-3-review-packet.md` was prepared for that review. ChatGPT later reviewed its 20 traces, which is an AI review of selected examples; no human review has been done (section 7).
 - **Validator false failures remain.** The shared validator rejects some true drafts:
   - A package and a clinic named earlier in the same sentence count as a mismatch ("Sapphire at Dr. Hakan Clinic is $3,200, so Silver is $200 cheaper"). Fixed at the closeout in `72e8f5d`.
   - A calculated amount whose packages were named in the previous sentence is unverified, by design.
@@ -223,7 +223,7 @@ This report and the held-out results were committed on top of `1e646b6` as `533d
 
 ## 7. Closeout
 
-Two closeout passes followed the held-out measurement. The first ended at `65f14e7`. The second fixed the failures that the first pass's live runs exposed, and ended at `c6791a1`. A post-review patch, `d88d628` to `072ef47`, then fixed three defects reported after the closeout. None of them changed the held-out set, its labels, its schedule row or its measurements, and held-out v1 was not rerun.
+Two closeout passes followed the held-out measurement. The first ended at `65f14e7`. The second fixed the failures that the first pass's live runs exposed, and ended at `c6791a1`. A post-review patch, `d88d628` to `072ef47`, then fixed three defects reported after the closeout. A link-delivery patch, `cd59820` and `ae39ee3`, followed. None of them changed the held-out set, its labels, its schedule row or its measurements, and held-out v1 was not rerun.
 
 ### Which commit each result belongs to
 
@@ -241,9 +241,11 @@ Two closeout passes followed the held-out measurement. The first ended at `65f14
   | `d88d628` | official checks v3 | scoring only |
   | `858f183` | S1's history explains a null clinic lookup by name only when it ran by name | S1 |
   | `072ef47` | `missing_link`: a ready payment link for the patient's one package must be in the reply | S0 and S1 |
+  | `cd59820` | `payments.links` 1.3.0 (overlay 1.4.0): `getPaymentLink` sequencing and recovery; `assessment` 1.1.0; `missing_link` also covers checkout and assessment links | policies S1; check S0 and S1 |
+  | `ae39ee3` | `payments.links` 1.3.1 (overlay 1.4.1): the sequencing rule applies to the link already chosen | S1 |
 
   `80702d0` (the live RC checks persist redacted traces) and `65f14e7` (submission-local references in docstrings, the corrected duplicate-id account) change no runtime behavior.
-- **Final checked commit:** `072ef47`. The post-review patch's offline checks, CI and live runs ran there. The second pass's offline checks, CI and "after" live runs ran at `c6791a1`. Later commits change docs only.
+- **Final checked commit:** `ae39ee3`. The link-delivery patch's offline checks, CI and final live runs ran there. Its first live runs ran at `cd59820`, the post-review patch's at `072ef47`, and the second pass's at `c6791a1`. Later commits change docs only.
 
 ### Fixes
 
@@ -499,24 +501,162 @@ Three defects were reported after the closeout, found by exercising the added fu
 
 **CI.** At `072ef47`, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"072ef4760d8c8a613637dd180bc57c70b517817e"}]`, and `git rev-parse HEAD` returned `072ef4760d8c8a613637dd180bc57c70b517817e`. That run covers `d88d628` to `072ef47`.
 
+### Link-delivery patch
+
+This bounded patch, `cd59820` and `ae39ee3`, covers the link omissions that `072ef47` left open. Its validator controls were written first and failed before the change.
+
+**Payment-call sequencing** (S1 policy text; `payments.links` 1.3.1, `checkout-only-links` overlay 1.4.1).
+- **Mechanism.** At `072ef47`, dev-035 run 2 and dev-049 run 2 called `getPaymentLink` before the package lookup had returned its ID. The first passed a null ID and got `missing_input`; the second passed an ID no tool had returned and was `rejected`. Each lookup came in the last round, so no round was left for the corrected call.
+- **Fix.** The policy tells the controller to call `getPaymentLink` for the link it chose, with that link's ID as a tool returned it in `STATE.history`.
+  - If the ID is there, it calls at once, with no new lookup.
+  - If not, it looks the ID up in this round and calls `getPaymentLink` in its next decision. It never passes a null, empty or guessed ID.
+  - After `missing_input` or `rejected`, it looks up the missing ID and calls again before answering.
+  - The tools, the executor and the round and call budget are unchanged.
+- **Wording.** `cd59820` shipped 1.3.0, which listed package IDs first and said "If the id is there, call getPaymentLink now". In that commit's live run, dev-034 run 3 ("Send me the checkout link for Heva") fetched a Silver payment link; all 9 earlier runs had fetched the checkout link. `ae39ee3` (1.3.1) applies the rule to the link already chosen.
+- **Controls** (`test_modular.py`). Scripted S1 runs cover three orders, each ending with the correct link and one round left:
+  - the lookup in round 1 and the link in round 2;
+  - a premature call in round 1 with a null ID (`missing_input`), corrected in round 2;
+  - a premature call in round 1 with an empty ID (`rejected`), corrected in round 2.
+
+  They also pass on the old runtime, which already carried a corrected call within the budget, so the fix is policy text. The rule text is asserted in both policy sets.
+
+**Link validation** (`cd59820`; the check is shared by S0 and S1).
+- **Defect.** `missing_link` covered only the payment link. dev-034 run 2 at `65f14e7` left out a ready checkout link. dev-105 run 2 at `072ef47` told the patient to pay from the assessment without sending its link.
+- **Fix.** `Evidence.links` holds each ready payment, checkout and assessment link returned this turn. `missing_link` requires at most one kind of link, in this order:
+  - the payment link for the patient's one package, as before;
+  - otherwise the checkout link for the patient's one clinic: their saved or newly written selection, the clinic the message names, or the clinic of the package it names, provided the message names no other clinic;
+  - otherwise the assessment link, when a loaded policy's `assessment_link_cues` match the request and `getPaymentLink` was not called this turn. `payments.links` declares cues for paying or booking from the assessment. `assessment` 1.1.0 adds cues for asking for it, finding it or opening it. S0 loads no policy modules, so it has no cues.
+- **Boundaries.** A link the controller never retrieved is never required; sequencing and recovery handle that case. The check runs no tools, and the repair bound is unchanged: one validation repair, then `unverified_reply`.
+- **Controls.** Every positive and both repairs failed before the change. The checkout negatives passed before and after it. The assessment negatives and the both-URLs control need the new cue interface, so they could not run before it.
+  - **Checkout** (`test_validate.py`). 4 positives: the clinic named, in lowercase, a saved clinic selection, and a named package whose clinic's checkout link is ready. 5 negatives: the link sent, two clinics named, no clinic, another clinic named against the saved one, and a payment link that is required and sent.
+  - **Assessment** (`test_validate.py`). 4 positives: paying from it, booking from it, asking for it again, and "I lost the link to my results". 7 negatives:
+    - the link sent;
+    - a graft question;
+    - a hairline change;
+    - a deposit-amount question;
+    - no loaded policy declaring cues;
+    - an assessment not yet shared;
+    - a deposit link already requested.
+  - **Both URLs ready** for a decided patient ("I've decided on Gold. Can I pay from my assessment?"). The assessment URL alone fails, with the Gold payment link required; the payment link alone passes.
+  - **Repair** (`test_modular.py`). Two scripted S1 repairs add a missing checkout link under the checkout-only overlay and a missing assessment link.
+  - **Front matter** (`test_policy_loader.py`). An invalid cue pattern is rejected.
+- **Replay.** 3,017 saved S0 and S1 drafts went through `check_answer` at `072ef47` and at `cd59820`, each with the skills its trace had loaded; held-out runs were excluded.
+  - Exactly 2 verdicts changed, both true omissions: dev-034 run 2 at `65f14e7` (checkout) and dev-105 run 2 at `072ef47` (assessment).
+  - The new requirements applied to 118 S1 drafts, 83 for the assessment and 35 for checkout, and 116 had sent the link.
+  - Neither new requirement asked for a URL that a case's labels forbid. The existing payment rule did so only for adv-020, in S0 drafts that answered a turn which should have escalated.
+
+**Offline checks** at `ae39ee3`, run locally with CPython 3.12.7. `cd59820` gave the same outputs.
+
+| command | output | result |
+|---|---|---|
+| `uv sync --locked` | `Checked 26 packages` | pass |
+| `uv run ruff check .` | `All checks passed!` | pass |
+| `uv run ruff format --check .` | `131 files already formatted` | pass |
+| `uv run mypy src` | `Success: no issues found in 49 source files` | pass |
+| `uv run pytest -m "not live"` | `735 passed, 29 deselected` | pass |
+| `uv run doctours-reply eval --dry-run --suite all` | official 5, dev 108, adversarial 71, regression 19, heldout_v1 98: `labels and references ok` | pass |
+| `uv run python scripts/audit_submission.py --history` | `audit passed: 0 findings (tracked tree and full history)` | pass |
+| `uv run python scripts/extract_packet.py --check` | exit 0, no output | pass |
+| `node --experimental-strip-types scripts/gen_tool_goldens.mjs --check` (Node v22.22.2) | `goldens unchanged: 170 cases (generated with node v22.22.2, checked with node v22.22.2)` | pass |
+
+**Live** at `cd59820` and `ae39ee3`, S1 only, with the model and configuration of section 2. Every run persisted redacted traces. The commands are those used at `072ef47`, with `--report runs/eval-links-<suite>-<commit>`.
+
+| run | `cd59820` | `ae39ee3` |
+|---|---|---|
+| official five, 3 runs | Run `20261004T205952Z-82e6e7`. 15/15 valid, escalation 15/15, 0 validation repairs, every v3 check passes in 15/15. | Run `20261004T211503Z-a0323a`. The same results. |
+| RC checks, 3 runs per case | `27 passed in 150.37s`, traces in `runs/live-rc-20261004T205953Z-8efec1/` | `27 passed in 142.53s`, traces in `runs/live-rc-20261004T211504Z-be2dc3/` |
+| dev v1 and adversarial v1, 3 runs | Run `20261004T205950Z-af0ebc`, 537 items | Run `20261004T211500Z-0caef1`, 537 items |
+
+In the RC runs, the payment-policy controls RC-PL-2 and RC-PL-3 passed 3/3 in each of their policy sets at both commits. At each commit, all 9 answered RC turns with a ready deposit link sent it, and no `getPaymentLink` call failed.
+
+| metric (dev and adversarial, 3 runs) | `072ef47` | `cd59820` | `ae39ee3` |
+|---|---|---|---|
+| escalation correct | 536/537 | 533/537 | 536/537 |
+| missed escalations | 0/150 | 1/150 (dev-082) | 0/150 |
+| unnecessary escalations | 1/387 (dev-005) | 3/387 (dev-034 ×2, dev-107) | 1/387 (dev-005) |
+| escalation code correct | 147/150 | 147/149 | 148/150 |
+| required URLs | 44/48 | 42/48 | 46/48 |
+| forbidden URLs sent | 0 | 0 | 0 |
+| grounded first try | 368/383 | 365/382 | 370/383 |
+| validation repairs | 16 | 20 | 14 |
+| goal coverage proxy | 188/198 | 180/198 | 189/198 |
+| tool selection | 282/354 | 279/354 | 278/354 |
+| controller failures | 0 | 0 | 0 |
+
+Required URL sent, by targeted case:
+
+| case | link | `072ef47` | `cd59820` | `ae39ee3` |
+|---|---|---|---|---|
+| dev-034 | Heva checkout | 3/3 | 0/3 | 3/3 |
+| dev-035 | Sapphire payment (no clinic named) | 1/3 | 2/3 | 1/3 |
+| dev-049 | Gold payment | 2/3 | 3/3 | 3/3 |
+| dev-105 | assessment | 2/3 | 2/3 | 3/3 |
+| dev-106 | Gold payment; assessment and checkout forbidden | 3/3, none forbidden | 3/3, none forbidden | 3/3, none forbidden |
+
+**Reading the live runs:**
+- **Writer repair.** At `cd59820`, the first draft of dev-105 run 2 left out the retrieved assessment link. `missing_link` cited `payments.links@1.3.0`, and the repair added the link. At `ae39ee3`, no draft left out a required link that had been retrieved, so `missing_link` did not fire.
+- **dev-034 at `cd59820`.** Runs 1 and 2 retrieved and sent the checkout link, but added "$500 USD for Silver or $600 USD for Gold". The validator binds $600 to Silver (K-11, below). The repair kept that form, and both runs fell back to `unverified_reply`. Run 3 fetched a Silver payment link instead, which is the wording problem `ae39ee3` fixed. All 3 runs at `ae39ee3` passed.
+- **Recovery after a failed `getPaymentLink` call.** adv-022 and adv-023 are excluded, because their correct outcome is no link.
+
+  | commit | failed calls | recovered |
+  |---|---|---|
+  | `072ef47` | 3 | 1 |
+  | `cd59820` | 2 | 1 |
+  | `ae39ee3` | 2 | 1 |
+
+  A call rejected after its lookup had run was corrected in the next round: dev-049 run 1 at `cd59820` and dev-049 run 2 at `ae39ee3`. At all three commits, dev-035 run 2 passed a null ID in round 2 and looked up Sapphire only in round 3. That left no round for the corrected call within the budget. Its reply then said the link could not be generated and pointed to the assessment, as the policy says.
+- **dev-035 run 1 at `ae39ee3`** resolved Sapphire to Heva and fetched Heva's checkout link. The reply did not send that link, but it also did not get Sapphire's payment link.
+- **dev-105 run 1 at `cd59820`** made no tool call, so there was no link to require. At `ae39ee3`, all 3 runs retrieved and sent it.
+- **Other differences** are route decisions or the known false rejections, which this patch does not touch:
+  - dev-082 run 2 at `cd59820` answered a request to contact a clinic instead of escalating it.
+  - adv-053 was coded `unsupported_booking_change` in runs 2 and 3 at both commits.
+  - dev-107 run 1 at `cd59820` fell back on "The deposit is $600 USD for Gold and $500 USD for Sapphire." (K-11).
+  - dev-005 run 2 at `ae39ee3` fell back on "Silver is $200 USD cheaper.", as at `072ef47`.
+
+**Usage and cost**, priced as in section 2:
+
+| run | items | calls | prompt (cached) | completion | rate-limit retries | estimate (upper bound) |
+|---|---|---|---|---|---|---|
+| dev and adversarial at `cd59820` | 537 | 1,637 | 9,370,331 (6,208,328) | 111,338 | 0 | $0.434 ($0.513) |
+| official five at `cd59820` | 15 | 44 | 272,820 (170,451) | 3,751 | 0 | $0.014 ($0.016) |
+| RC checks at `cd59820` | 81 | 246 | 1,456,257 (972,144) | 17,840 | 0 | $0.067 ($0.079) |
+| dev and adversarial at `ae39ee3` | 537 | 1,649 | 9,435,588 (7,030,208) | 112,451 | 0 | $0.367 ($0.427) |
+| official five at `ae39ee3` | 15 | 44 | 271,932 (193,425) | 3,718 | 0 | $0.012 ($0.014) |
+| RC checks at `ae39ee3` | 81 | 242 | 1,437,878 (1,045,990) | 17,855 | 0 | $0.059 ($0.068) |
+| total | 1,266 | 3,862 | 22,244,806 (15,620,546) | 266,953 | 0 | $0.953 ($1.117) |
+
+**Not run for the patch:**
+- **S0 was not rerun live.** It shares the checkout requirement, but no saved S0 draft changed verdict in the replay. It has no assessment cues.
+- **Held-out v1 was not rerun**, and its row, labels, scorer row and measurements are unchanged.
+- **The live smoke test was not rerun.**
+- **No judge or human review was run.**
+- **A first launch at `cd59820` was discarded.** Its shell ended the three runs after at most 4 items each, before any report was written. The partial output was deleted, and the runs were restarted into fresh directories. Only the restarted runs are reported.
+
+**CI.** At `ae39ee3`, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"ae39ee318dee66086d4ddf380962485d50106658"}]`, and `git rev-parse HEAD` returned `ae39ee318dee66086d4ddf380962485d50106658`. CI also succeeded at `cd59820` (`cd598204703be78f6ecbf06bd98be02781e1d512`).
+
 ### Remaining limitations
 
 - **Three validator false rejections remain.** All are shared by S0 and S1, and none is loosened without new negative controls.
   - "The deposit is USD $500." after a sentence naming one package stays `unlinked_amount`, because only "It" and "Its" bind to the previous sentence. At `c6791a1`, this cost dev-010 run 1 a repair.
-  - "The deposits are $500 USD for Silver and $600 USD for Gold." credits $600 to Silver, because an amount binds to the package before it. Both the old and the new validator reject the sentence. In dev-003 run 1 at `c6791a1`, the repair repeated the draft, and the turn fell back to `unverified_reply`.
-  - "Silver is $200 USD cheaper." after a sentence giving both prices stays `unverified_calculation`, because a gap is accepted only when its sentence names both packages. In dev-005 run 2 at `072ef47`, the repair kept that form, and the turn fell back to `unverified_reply`.
-- **Phase 4 acceptance rule.** Clean controller demonstrations exclude failed trajectories and redundant call proposals.
-  - A validation fallback (outcome stage `validation`, code `unverified_reply`) is never a successful teacher demonstration. dev-093 run 2 at `65f14e7`, dev-003 run 1 at `c6791a1` and dev-005 run 2 at `072ef47` are such trajectories and must fail teacher acceptance. So must any trajectory that fails a check.
+  - "The deposits are $500 USD for Silver and $600 USD for Gold." credits $600 to Silver, because an amount binds to the package before it. Both the old and the new validator reject the sentence.
+    - In dev-003 run 1 at `c6791a1`, the repair repeated the draft, and the turn fell back to `unverified_reply`.
+    - At `cd59820`, the same form cost dev-034 runs 1 and 2 ("$500 USD for Silver or $600 USD for Gold") and dev-107 run 1 a fallback.
+  - "Silver is $200 USD cheaper." after a sentence giving both prices stays `unverified_calculation`, because a gap is accepted only when its sentence names both packages. In dev-005 run 2 at `072ef47` and again at `ae39ee3`, the repair kept that form, and the turn fell back to `unverified_reply`.
+- **Phase 4 acceptance rule.** Clean controller demonstrations exclude failed trajectories, incorrect decisions and redundant call proposals.
+  - A validation fallback (outcome stage `validation`, code `unverified_reply`) is never a successful teacher demonstration. Such trajectories must fail teacher acceptance: dev-093 run 2 at `65f14e7`, dev-003 run 1 at `c6791a1`, dev-005 run 2 at `072ef47` and `ae39ee3`, and dev-034 runs 1 and 2 and dev-107 run 1 at `cd59820`. So must any trajectory that fails a check.
+  - An incorrect decision rejects the rollout, even when the turn later recovers or its reply passes every check. Examples are a `getPaymentLink` call made before its ID was known (`missing_input` or `rejected`), such as dev-049 run 2 at `ae39ee3`, and a link type the request did not call for, such as dev-034 run 3 at `cd59820`. A wrong escalation decision or code is also an incorrect decision.
   - A decide step that proposes a call already run this turn rejects the rollout, even though the executor reuses the earlier result. The `dev-108` runs at `65f14e7`, with 31 repeated reads in 20 item-runs, are examples.
   - Phase 4 has not started, so no filter exists yet; it must implement this rule.
-- **Some ready or needed links are still left out.** `missing_link` (`072ef47`) requires a retrieved payment link for the patient's one package. Three other omissions are not covered:
-  - Checkout links: dev-034 run 2 at `65f14e7` left out a ready checkout link.
-  - The assessment link: dev-105 run 2 at `072ef47` told the patient to pay from the assessment without its link.
-  - A payment link the controller never retrieved: dev-035 run 2 and dev-049 run 2 at `072ef47` asked for it before the package ID was known, and did not ask again.
+- **A link the controller never retrieves is not required by any check**, by design. That case depends on sequencing and recovery.
+  - dev-035 ("Can I get the link to pay the Sapphire deposit?") sent its payment link in 1 of 3 runs at `ae39ee3`.
+    - Run 2 called `getPaymentLink` with a null ID in round 2 and looked up Sapphire in round 3, with no round left for the corrected call. It did the same at `072ef47` and `cd59820`.
+    - Run 1 resolved Sapphire to Heva.
+  - dev-105 run 1 at `cd59820` made no tool call, so the assessment link was never retrieved.
 - **The official specialty check accepts limited wording:** the flag's words, or a `bestFor` phrase of the clinic that contains them. A paraphrase such as "afro-textured hair" is not counted by the official check. Separately, the official suite's `required_facts` label for heva-packages still matches "Afro Hair" literally. At both closeout commits, heva-packages runs 1 and 2 therefore score 4 of 5 facts there while passing official checks v2, and so does run 1 at `072ef47` while passing v3. Aligning that label would change the official label file's hash, so it is left for review.
 - **A package named without its clinic still costs one null call** when no package lookup came first. After the null result, dev-020 run 3 at `c6791a1` answered "I don't have a Sapphire price" instead of looking up the clinics the reason listed. dev-035 run 3 at `072ef47` asked the patient which clinic instead.
-- **Tool selection stays a weak label** (section 6), at 280/354 on dev and adversarial at `c6791a1` and 282/354 at `072ef47`.
-- **adv-053** was coded `unsupported_booking_change` against the label `unsupported_other` in run 1 at `c6791a1`, where runs 2 and 3 matched, and in all 3 runs at `072ef47`.
+- **Tool selection stays a weak label** (section 6): 280/354 on dev and adversarial at `c6791a1`, 282/354 at `072ef47` and 278/354 at `ae39ee3`.
+- **adv-053** was coded `unsupported_booking_change` against the label `unsupported_other`. That happened in run 1 at `c6791a1`, where runs 2 and 3 matched, in all 3 runs at `072ef47`, and in runs 2 and 3 at both `cd59820` and `ae39ee3`.
+- **dev-082 run 2 at `cd59820`** answered "Can you ask Dr. Hakan if he would do a lower hairline?" instead of escalating it as an unsupported clinic contact. That was a route decision. All 3 runs escalated at `ae39ee3`.
 - **Branch protection is unavailable** (section 6). Required checks, blocked force pushes and blocked deletion are not enforced on `main`.
 - Not tagged `v0.3.0`. Phase 4, data generation, training and hosting have not started.
 
@@ -526,5 +666,6 @@ Three defects were reported after the closeout, found by exercising the added fu
 - **Categories:** ordinary answers, multiple questions, the specialty wording, pricing and deposits, assessment and payment links, supported versus unsupported actions, and validator failures.
 - **Closeout failures:** dev-102, dev-105 and dev-108 appear before and after their fixes. dev-093 appears before its fix. dev-003 shows a limitation that remains. dev-106 shows the payment-link omission that `072ef47` now rejects.
 - **Contents:** each item names its trace's commit (`65f14e7` or `c6791a1`) and shows the input, context, loaded policies, controller steps, tool observations, the final response, any rejected drafts and the automated findings.
-- **Review fields:** completeness, factual association, policy compliance, unsupported capability claims and tone. All are blank.
-- The coding agent chose the items and built the packet. Nobody has reviewed it, and it is not human or independent validation.
+- **Review fields:** completeness, factual association, policy compliance, unsupported capability claims and tone. All human-review fields are blank.
+- **Review status:** ChatGPT has reviewed the 20 traces. That is an AI review of selected examples, not a human review, and 20 chosen traces do not measure the suites. Its findings are not recorded in the packet. No human review has been done.
+- The coding agent chose the items and built the packet, which is not human or independent validation.
