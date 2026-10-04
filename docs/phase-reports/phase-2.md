@@ -1,6 +1,6 @@
 # Phase 2 report: monolithic baseline, shared runtime and evaluation runner
 
-Date: 2026-10-04. Last code commit: `3721b5e`. The held-out baseline ran on it, and this report update is a docs and results commit on top of it.
+Date: 2026-10-04. Last code commit: `3721b5e`. The held-out baseline ran on it, and this report update is a docs and results commit on top of it. Later closeout checks are in `phase-2-closeout.md`.
 
 **Evidence comes in two kinds, labelled throughout.**
 
