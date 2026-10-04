@@ -29,6 +29,12 @@ from doctours_reply.tools.packet_tools import find_clinic
 from doctours_reply.trace.schema import TraceRecord
 
 HUMAN_CLASS = "human_requested"
+OFFICIAL_CHECKS_VERSION = "2"
+"""v2: a clinic flag counts when affirmed of a clinic that has it, in the flag's own words or
+that clinic's own wording for it (v1 required the flag's exact words anywhere in the reply)."""
+_GENERIC = frozenset({"Dr", "Clinic"})
+_FLAG_CLAUSE = re.compile(r"[,;:]|\b(?:but|while|whereas)\b", re.IGNORECASE)
+_FLAG_NEGATION = re.compile(r"\b(?:no|not|never|cannot)\b|n['’]t\b", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -168,7 +174,7 @@ def official_checks(
     flags = {f["value"] for c in fixture.tool_data.clinics for f in c.get("clinic_flags", [])}
     for flag in sorted(flags):
         if flag.lower() in text.lower():
-            checks[f"fact {flag}"] = flag.lower() in reply.response.lower()
+            checks[f"fact {flag}"] = _affirms_flag(reply.response, flag, fixture)
     for url in urls_in(text):
         checks[f"url {url}"] = url in _reply_urls(reply)
     return checks
@@ -287,6 +293,43 @@ def _memory_ok(labels: Labels, reply: Reply) -> bool:
     return all(updates.get(k) == v for k, v in labels.memory.must_set.items()) and not any(
         key in updates for key in labels.memory.must_not_set
     )
+
+
+def _affirms_flag(response: str, flag: str, fixture: Fixture) -> bool:
+    """A clause states `flag`, or its clinic's own `bestFor` wording that holds every word of
+    it, of a clinic that has the flag, without negating it. A sentence that names no clinic
+    refers to the last clinic named before it."""
+    clinics = fixture.tool_data.clinics
+    owners = {c["name"] for c in clinics if flag in (f["value"] for f in c.get("clinic_flags", []))}
+    words = set(re.findall(r"[a-z]+", flag.lower()))
+    phrases = {flag} | {
+        phrase
+        for c in clinics
+        if c["name"] in owners
+        for phrase in c.get("ai_context", {}).get("bestFor", [])
+        if words <= set(re.findall(r"[a-z]+", phrase.lower()))
+    }
+    tokens = {
+        c["name"]: " ".join(w for w in re.findall(r"[A-Za-z]+", c["name"]) if w not in _GENERIC)
+        for c in clinics
+    }
+    last: str | None = None
+    for sentence in split_sentences(response):
+        spots = sorted(
+            (m.start(), name)
+            for name, token in tokens.items()
+            for m in re.finditer(rf"\b{re.escape(token)}\b", sentence)
+        )
+        for phrase in phrases:
+            for match in re.finditer(rf"\b{re.escape(phrase)}\b", sentence, re.IGNORECASE):
+                before = [name for spot, name in spots if spot < match.start()]
+                after = [name for spot, name in spots if spot > match.start()]
+                clinic = before[-1] if before else after[0] if after else last
+                clause = _FLAG_CLAUSE.split(sentence[: match.start()])[-1]
+                if clinic in owners and not _FLAG_NEGATION.search(clause):
+                    return True
+        last = spots[-1][1] if spots else last
+    return False
 
 
 def _package_names(text: str, fixture: Fixture) -> list[str]:

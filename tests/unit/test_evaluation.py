@@ -199,6 +199,32 @@ def test_official_checks_follow_the_grading_note(fixture: Fixture) -> None:
     assert checks["no_sales_answer"] is True
 
 
+@pytest.mark.parametrize(
+    ("response", "stated"),
+    [
+        ("Heva Clinic specializes in afro and textured hair.", True),
+        ("Heva is an Afro Hair specialist.", True),
+        ("Heva Clinic has Silver and Gold. It focuses on afro and textured hair.", True),
+        ("Afro and textured hair is what Heva Clinic is known for.", True),
+        ("Dr. Hakan Clinic isn't flagged for it, but Heva Clinic is an afro hair clinic.", True),
+        ("Heva Clinic does not specialize in afro and textured hair.", False),
+        ("Heva isn't flagged for Afro Hair.", False),
+        ("Dr. Hakan Clinic specializes in afro and textured hair.", False),
+        ("Heva Clinic has Gold, and Dr. Hakan Clinic is the one for afro hair.", False),
+        ("Dr. Hakan Clinic has Sapphire. It focuses on afro and textured hair.", False),
+        ("Heva Clinic works with textured hair.", False),
+    ],
+)
+def test_a_clinic_flag_counts_only_when_affirmed_of_its_clinic(
+    fixture: Fixture, response: str, stated: bool
+) -> None:
+    expected = {"escalate": False, "response": "Heva Clinic is our Afro Hair clinic."}
+    assert official_checks("afro?", _reply(response), expected, fixture) == {
+        "escalate": True,
+        "fact Afro Hair": stated,
+    }
+
+
 def test_statistics() -> None:
     assert wilson(0, 0) == (0.0, 1.0)
     low, high = wilson(5, 10)
@@ -330,6 +356,7 @@ def test_eval_runs_offline_on_a_scripted_model_and_writes_a_report(
     assert metrics["missed_escalation"]["human_request"]["rate"] == 1.0
     assert metrics["output_valid_after_finalize"]["rate"] == 1.0
     assert "heva-packages#run1" in metrics["official_checks"]
+    assert metrics["official_checks_version"] == "2"
     lines = (report_dir / "cases.jsonl").read_text().splitlines()
     assert len(lines) == 48
     assert (report_dir / "summary.md").read_text().startswith("# Evaluation summary")

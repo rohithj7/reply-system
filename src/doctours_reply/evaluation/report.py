@@ -10,7 +10,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, Final, get_args
 
-from doctours_reply.evaluation.scorer import HUMAN_CLASS, CaseScore
+from doctours_reply.evaluation.scorer import HUMAN_CLASS, OFFICIAL_CHECKS_VERSION, CaseScore
 from doctours_reply.evaluation.stats import (
     Counts,
     case_bootstrap,
@@ -177,6 +177,7 @@ def system_metrics(scores: Sequence[CaseScore]) -> dict[str, Any]:
     }
     official = [s for s in scores if s.official is not None]
     if official:
+        metrics["official_checks_version"] = OFFICIAL_CHECKS_VERSION
         metrics["official_checks"] = {
             s.case_id + f"#run{s.run}": s.official for s in sorted(official, key=_key)
         }
