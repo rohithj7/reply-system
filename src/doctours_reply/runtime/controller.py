@@ -129,7 +129,10 @@ def _action_problems(decision: ActionDecision, state: DecideState) -> list[str]:
             problems.append("no skill loads are left")
         new = [s for s in decision.skills_to_add if s not in state.loaded_skills]
         if not new:
-            problems.append("skills_to_add needs at least one skill that is not loaded")
+            problems.append(
+                "skills_to_add needs at least one skill that is not loaded; loaded skills are "
+                "in STATE.policies, so choose call_tools, answer, clarify or escalate instead"
+            )
         problems += [f"unknown skill {s!r}" for s in new if s not in state.known_skills]
     elif decision.skills_to_add:
         problems.append("skills_to_add is only for next 'load_skills'")

@@ -55,6 +55,11 @@ def _runs(
 def _passes(results: list[ItemResult], check: Check, label: str) -> int:
     passed = sum(check(r) for r in results)
     print(f"{label}: {passed}/{len(results)}")
+    for result in results:
+        if not check(result):
+            calls = [(m.purpose, m.content) for m in result.trace.model_calls]
+            tools = [(o.tool, o.status) for o in result.trace.observations]
+            print(f"  failed run {result.trace.item_id}: tools {tools}; calls {calls}")
     return passed
 
 

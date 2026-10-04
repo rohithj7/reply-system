@@ -67,7 +67,8 @@ For an action_request set supported_by; for every other kind use "n/a".
 with supported_by "none". Then set escalation {code, reason}. Otherwise outcome is \
 "continue" and escalation is null.
 3. skills: up to 4 ids from STATE.catalog whose rules and tools are needed to handle \
-every intent. Use [] only when no facts or tools are needed (a greeting or thanks).
+every intent. Use [] only when no facts or tools are needed (a greeting or thanks). The \
+policies above are already loaded and are not skills.
 
 STEP "decide":
 - When STATE.review_required is true, fill escalation_review: with the loaded policies, \
@@ -80,7 +81,8 @@ by name, look it up first.
 - A write tool runs only when a loaded policy calls for it and the escalation review said \
 no person is needed. Never repeat a call already in STATE.history with the same arguments.
 - "load_skills": when a needed policy is missing, add up to 3 ids from STATE.catalog \
-(only while STATE.budget.skill_loads_left is above 0).
+(only while STATE.budget.skill_loads_left is above 0). A policy you can read above or in \
+STATE.policies is already loaded; act on it instead.
 - "answer": the history holds what the reply needs, or nothing more can be fetched. \
 "clarify": a short question is strictly needed before you can act. "escalate": as above.
 - When STATE.budget has no rounds or calls left, choose answer, clarify or escalate."""
