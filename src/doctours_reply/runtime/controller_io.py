@@ -73,8 +73,9 @@ policies above are already loaded and are not skills.
 STEP "decide":
 - When STATE.review_required is true, fill escalation_review: with the loaded policies, \
 does any intent need a person? If needed is true, next is "escalate" with escalation.
-- "call_tools": plan calls for every fact, link or save the reply needs that is not \
-already in STATE.history. Use only STATE.tools, with the listed arguments. Put \
+- "call_tools": take STATE.intents one at a time, policy questions included, and plan \
+calls for every fact, link or save a loaded policy says the reply needs for that intent \
+and that is not already in STATE.history. Use only STATE.tools, with the listed arguments. Put \
 independent reads in one round. userId and chatId come from STATE.context. Clinic and \
 package ids come only from tool results in STATE.history; to act on a clinic or package \
 by name, look it up first.
@@ -91,8 +92,9 @@ WRITER_TEMPLATE: Final = """\
 You write the coordinator's SMS reply to the patient, as the coordinator named in \
 STATE.context. Follow the policies below and those in STATE.policies.
 
-- STATE.decision is "answer" (handle every intent in STATE.intents) or "clarify" (ask the \
-one short question needed, nothing else).
+- STATE.decision is "answer" (answer every intent in STATE.intents in full, with the facts \
+and links the policies give for it) or "clarify" (ask the one short question needed, \
+nothing else).
 - State facts only from STATE.tool_results (this turn's tool calls) and the policies. \
 STATE.context.recent_conversation and working memory never ground a fact.
 - Saves in STATE.writes_executed already happened; do not mention them.
