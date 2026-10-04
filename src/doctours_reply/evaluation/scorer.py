@@ -29,9 +29,11 @@ from doctours_reply.tools.packet_tools import find_clinic
 from doctours_reply.trace.schema import TraceRecord
 
 HUMAN_CLASS = "human_requested"
-OFFICIAL_CHECKS_VERSION = "2"
-"""v2: a clinic flag counts when affirmed of a clinic that has it, in the flag's own words or
-that clinic's own wording for it (v1 required the flag's exact words anywhere in the reply)."""
+OFFICIAL_CHECKS_VERSION = "3"
+"""v3: a clinic flag counts when affirmed of a clinic that has it, named in any case, in the
+flag's own words or that clinic's own wording for it, with no negation anywhere in that clause.
+v2 matched clinic names case-sensitively and read negation only before the phrase; v1 required
+the flag's exact words anywhere in the reply."""
 _GENERIC = frozenset({"Dr", "Clinic"})
 _FLAG_CLAUSE = re.compile(r"[,;:]|\b(?:but|while|whereas)\b", re.IGNORECASE)
 _FLAG_NEGATION = re.compile(r"\b(?:no|not|never|cannot)\b|n['’]t\b", re.IGNORECASE)
@@ -297,7 +299,7 @@ def _memory_ok(labels: Labels, reply: Reply) -> bool:
 
 def _affirms_flag(response: str, flag: str, fixture: Fixture) -> bool:
     """A clause states `flag`, or its clinic's own `bestFor` wording that holds every word of
-    it, of a clinic that has the flag, without negating it. A sentence that names no clinic
+    it, of a clinic that has the flag, and holds no negation. A sentence that names no clinic
     refers to the last clinic named before it."""
     clinics = fixture.tool_data.clinics
     owners = {c["name"] for c in clinics if flag in (f["value"] for f in c.get("clinic_flags", []))}
@@ -318,15 +320,17 @@ def _affirms_flag(response: str, flag: str, fixture: Fixture) -> bool:
         spots = sorted(
             (m.start(), name)
             for name, token in tokens.items()
-            for m in re.finditer(rf"\b{re.escape(token)}\b", sentence)
+            for m in re.finditer(rf"\b{re.escape(token)}\b", sentence, re.IGNORECASE)
         )
+        cuts = list(_FLAG_CLAUSE.finditer(sentence))
         for phrase in phrases:
             for match in re.finditer(rf"\b{re.escape(phrase)}\b", sentence, re.IGNORECASE):
                 before = [name for spot, name in spots if spot < match.start()]
                 after = [name for spot, name in spots if spot > match.start()]
                 clinic = before[-1] if before else after[0] if after else last
-                clause = _FLAG_CLAUSE.split(sentence[: match.start()])[-1]
-                if clinic in owners and not _FLAG_NEGATION.search(clause):
+                start = max((c.end() for c in cuts if c.end() <= match.start()), default=0)
+                end = min((c.start() for c in cuts if c.start() >= match.end()), default=None)
+                if clinic in owners and not _FLAG_NEGATION.search(sentence[start:end]):
                     return True
         last = spots[-1][1] if spots else last
     return False

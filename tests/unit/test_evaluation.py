@@ -207,7 +207,12 @@ def test_official_checks_follow_the_grading_note(fixture: Fixture) -> None:
         ("Heva Clinic has Silver and Gold. It focuses on afro and textured hair.", True),
         ("Afro and textured hair is what Heva Clinic is known for.", True),
         ("Dr. Hakan Clinic isn't flagged for it, but Heva Clinic is an afro hair clinic.", True),
+        ("heva clinic specializes in afro and textured hair.", True),
+        ("Heva Clinic is the afro hair specialist, not Dr. Hakan Clinic.", True),
         ("Heva Clinic does not specialize in afro and textured hair.", False),
+        ("Afro hair is not Heva Clinic’s specialty.", False),
+        ("Afro and textured hair isn't something Heva Clinic offers.", False),
+        ("Heva Clinic has Gold, and dr. hakan clinic is the one for afro hair.", False),
         ("Heva isn't flagged for Afro Hair.", False),
         ("Dr. Hakan Clinic specializes in afro and textured hair.", False),
         ("Heva Clinic has Gold, and Dr. Hakan Clinic is the one for afro hair.", False),
@@ -356,7 +361,7 @@ def test_eval_runs_offline_on_a_scripted_model_and_writes_a_report(
     assert metrics["missed_escalation"]["human_request"]["rate"] == 1.0
     assert metrics["output_valid_after_finalize"]["rate"] == 1.0
     assert "heva-packages#run1" in metrics["official_checks"]
-    assert metrics["official_checks_version"] == "2"
+    assert metrics["official_checks_version"] == "3"
     lines = (report_dir / "cases.jsonl").read_text().splitlines()
     assert len(lines) == 48
     assert (report_dir / "summary.md").read_text().startswith("# Evaluation summary")
