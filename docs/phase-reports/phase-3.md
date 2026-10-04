@@ -2,7 +2,7 @@
 
 Date: 2026-10-04. Last code commit: `bb7d8b2`. Docs commit `f8cacb7` and pre-registration commit `1e646b6` follow it. The scheduled held-out comparison ran at `1e646b6`. The Phase 2 closeout is in `phase-2-closeout.md`.
 
-Sections 1 to 6 describe the build measured at `1e646b6`. Section 7 is the closeout, which changed behavior after that measurement; its final checked commit is `ae39ee3`, after a post-review patch and a link-delivery patch. The semantic-review packet is `phase-3-review-packet.md`.
+Sections 1 to 6 describe the build measured at `1e646b6`. Section 7 is the closeout, which changed behavior after that measurement; its final checked commit is `490d09d`, after a post-review patch, a link-delivery patch, a link-requirement correction and a card-redaction correction. The semantic-review packet is `phase-3-review-packet.md`.
 
 **Evidence comes in two kinds, labelled throughout.**
 
@@ -223,7 +223,7 @@ This report and the held-out results were committed on top of `1e646b6` as `533d
 
 ## 7. Closeout
 
-Two closeout passes followed the held-out measurement. The first ended at `65f14e7`. The second fixed the failures that the first pass's live runs exposed, and ended at `c6791a1`. A post-review patch, `d88d628` to `072ef47`, then fixed three defects reported after the closeout. A link-delivery patch, `cd59820` and `ae39ee3`, followed. None of them changed the held-out set, its labels, its schedule row or its measurements, and held-out v1 was not rerun.
+Two closeout passes followed the held-out measurement. The first ended at `65f14e7`. The second fixed the failures that the first pass's live runs exposed, and ended at `c6791a1`. A post-review patch, `d88d628` to `072ef47`, then fixed three defects reported after the closeout. A link-delivery patch, `cd59820` and `ae39ee3`, followed, then a link-requirement correction, `0d4bb4f`, and a card-redaction correction, `490d09d`. None of them changed the held-out set, its labels, its schedule row or its measurements, and held-out v1 was not rerun. After the redaction correction, saved traces were redacted again, including nine held-out trace files; no score, report or commit attribution changed (Card-redaction correction, below).
 
 ### Which commit each result belongs to
 
@@ -243,9 +243,11 @@ Two closeout passes followed the held-out measurement. The first ended at `65f14
   | `072ef47` | `missing_link`: a ready payment link for the patient's one package must be in the reply | S0 and S1 |
   | `cd59820` | `payments.links` 1.3.0 (overlay 1.4.0): `getPaymentLink` sequencing and recovery; `assessment` 1.1.0; `missing_link` also covers checkout and assessment links | policies S1; check S0 and S1 |
   | `ae39ee3` | `payments.links` 1.3.1 (overlay 1.4.1): the sequencing rule applies to the link already chosen | S1 |
+  | `0d4bb4f` | `missing_link` resolves the link kind and subject from the request, the selection and the policy's `deposit_links`; `payments.links` 1.4.0 (overlay 1.5.0) | check S0 and S1; policies S1 |
+  | `490d09d` | card redaction: punctuation and group boundaries, an expiry and code after a card number, a last four with card context | S0 and S1 |
 
   `80702d0` (the live RC checks persist redacted traces) and `65f14e7` (submission-local references in docstrings, the corrected duplicate-id account) change no runtime behavior.
-- **Final checked commit:** `ae39ee3`. The link-delivery patch's offline checks, CI and final live runs ran there. Its first live runs ran at `cd59820`, the post-review patch's at `072ef47`, and the second pass's at `c6791a1`. Later commits change docs only.
+- **Final checked commit:** `490d09d`. The card-redaction correction's offline checks, CI and focused live check ran there. The link-requirement correction's offline checks, CI and live runs ran at `0d4bb4f`. The link-delivery patch's ran at `cd59820` and `ae39ee3`, the post-review patch's at `072ef47`, and the second pass's at `c6791a1`. Later commits change docs only.
 
 ### Fixes
 
@@ -314,7 +316,7 @@ Two closeout passes followed the held-out measurement. The first ended at `65f14
 | `uv run python scripts/extract_packet.py --check` | exit 0, no output | pass |
 | `node --experimental-strip-types scripts/gen_tool_goldens.mjs --check` (Node v22.22.2) | `goldens unchanged: 170 cases (generated with node v22.22.2, checked with node v22.22.2)` | pass |
 
-**Live.** The model and configuration are as in section 2. Every live run persisted redacted traces. The S1 history and read-reuse changes apply to every S1 turn, so the whole dev and adversarial suites ran three times, not only the affected cases.
+**Live.** The model and configuration are as in section 2. Every live run persisted traces through the redactor; four card-data cases kept card details until `490d09d`, and those traces were redacted after collection (Card-redaction correction, below). The S1 history and read-reuse changes apply to every S1 turn, so the whole dev and adversarial suites ran three times, not only the affected cases.
 
 | run | command | at `65f14e7` | at `c6791a1` |
 |---|---|---|---|
@@ -453,7 +455,7 @@ Three defects were reported after the closeout, found by exercising the added fu
 | `uv run python scripts/extract_packet.py --check` | exit 0, no output | pass |
 | `node --experimental-strip-types scripts/gen_tool_goldens.mjs --check` (Node v22.22.2) | `goldens unchanged: 170 cases (generated with node v22.22.2, checked with node v22.22.2)` | pass |
 
-**Live** at `072ef47`, S1 only. The model and configuration are as in section 2, and every run persisted redacted traces.
+**Live** at `072ef47`, S1 only. The model and configuration are as in section 2, and every run persisted traces through the redactor, with the same four cases redacted after collection.
 
 | run | command | result |
 |---|---|---|
@@ -522,7 +524,7 @@ This bounded patch, `cd59820` and `ae39ee3`, covers the link omissions that `072
 
 **Link validation** (`cd59820`; the check is shared by S0 and S1).
 - **Defect.** `missing_link` covered only the payment link. dev-034 run 2 at `65f14e7` left out a ready checkout link. dev-105 run 2 at `072ef47` told the patient to pay from the assessment without sending its link.
-- **Fix.** `Evidence.links` holds each ready payment, checkout and assessment link returned this turn. `missing_link` requires at most one kind of link, in this order:
+- **Fix** (its selection order is superseded by the link-requirement correction, below). `Evidence.links` holds each ready payment, checkout and assessment link returned this turn. `missing_link` requires at most one kind of link, in this order:
   - the payment link for the patient's one package, as before;
   - otherwise the checkout link for the patient's one clinic: their saved or newly written selection, the clinic the message names, or the clinic of the package it names, provided the message names no other clinic;
   - otherwise the assessment link, when a loaded policy's `assessment_link_cues` match the request and `getPaymentLink` was not called this turn. `payments.links` declares cues for paying or booking from the assessment. `assessment` 1.1.0 adds cues for asking for it, finding it or opening it. S0 loads no policy modules, so it has no cues.
@@ -559,7 +561,7 @@ This bounded patch, `cd59820` and `ae39ee3`, covers the link omissions that `072
 | `uv run python scripts/extract_packet.py --check` | exit 0, no output | pass |
 | `node --experimental-strip-types scripts/gen_tool_goldens.mjs --check` (Node v22.22.2) | `goldens unchanged: 170 cases (generated with node v22.22.2, checked with node v22.22.2)` | pass |
 
-**Live** at `cd59820` and `ae39ee3`, S1 only, with the model and configuration of section 2. Every run persisted redacted traces. The commands are those used at `072ef47`, with `--report runs/eval-links-<suite>-<commit>`.
+**Live** at `cd59820` and `ae39ee3`, S1 only, with the model and configuration of section 2. Every run persisted traces through the redactor, with the same four cases redacted after collection. The commands are those used at `072ef47`, with `--report runs/eval-links-<suite>-<commit>`.
 
 | run | `cd59820` | `ae39ee3` |
 |---|---|---|
@@ -634,6 +636,154 @@ Required URL sent, by targeted case:
 
 **CI.** At `ae39ee3`, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"ae39ee318dee66086d4ddf380962485d50106658"}]`, and `git rev-parse HEAD` returned `ae39ee318dee66086d4ddf380962485d50106658`. CI also succeeded at `cd59820` (`cd598204703be78f6ecbf06bd98be02781e1d512`).
 
+### Link-requirement correction
+
+`0d4bb4f` changes which link `missing_link` requires. The check is shared by S0 and S1 and still runs no tools. Its controls were written first and failed before the change.
+
+- **Defect.** At `ae39ee3`, the required link followed whichever links a tool had returned.
+  - With no payment link retrieved, a decided patient who named a package fell back to any ready checkout link for that package's clinic. Under the default policy, a decided Gold/Heva patient asking how to pay was therefore required to get the Heva checkout link.
+  - Any `getPaymentLink` call this turn switched off the assessment requirement, even an unrelated failed one, so an omitted ready assessment link went undetected.
+  - A request not to send a checkout link did not stop the check from requiring it.
+- **Fix.** The validator resolves the kind and subject first, from the message, the patient's selection and the active policy.
+  - The patient's package is the one package the message names, else their saved or newly written selection. Their clinic is the one clinic the message names, the named package's clinic, or their selection. Package names now come from the fixture catalog as well as this turn's results, as clinic names already did. A patient still deciding ("still comparing", "once I choose") has neither.
+  - The deposit link is the first type in the active policy's `deposit_links` that fits. `payments.links` 1.4.0 declares `payment`, then `checkout` (packet L1308-L1315). The `checkout-only-links` overlay 1.5.0 declares `checkout` only. S0 uses the packet's order.
+  - Only the resolved link is required, and only when a tool returned it ready. If no tool returned it, fetching it is the controller's job, and no other link stands in for it.
+  - The assessment link is required on a policy cue, whatever `getPaymentLink` calls ran, unless a deposit link answers the patient's package.
+  - A link the patient asks not to be sent ("don't send the checkout link yet") is never required.
+  - The limits are unchanged: 3 execute rounds, 8 calls and one validation repair, then `unverified_reply`.
+- **Controls** (`test_validate.py`). 7 failed before the change, each for the intended reason:
+  - 3 for a decided Gold/Heva patient asking to pay, with only the Heva checkout link retrieved, under the default policy: after a package lookup, with only the clinic list, and with a saved selection. The old check required the checkout link in each. Under the checkout-only overlay, the same setups require it before and after.
+  - 2 for declined checkout links.
+  - 2 for an omitted ready assessment link after an unrelated failed `getPaymentLink` call, one `missing_input` and one `rejected`.
+
+  4 guards passed before and after: a clinic-only checkout request, "I don't want a call, just send me the Heva checkout link", a still-comparing patient who names Sapphire, and a decided patient whose payment link was never retrieved. `test_policy_loader.py` rejects a `deposit_links` entry that is not a `getPaymentLink` type.
+- **Replaced control.** The checkout positive "I'll take Gold, send me the link" required the Heva checkout link only because Gold is a Heva package. It is replaced by "I'm going with Heva, send me the link".
+- **Replay.** Saved S0 and S1 drafts went through `check_answer` at `8646c91` and at `0d4bb4f`, each with the policies its trace had loaded; held-out runs were excluded. Before the live runs this covered 3,951 drafts in 38 trace directories. With them, it covered 4,417 drafts in 41.
+  - **No verdict changed,** comparing the codes and each `missing_link` URL.
+  - **The required link changed in 2 of 5,736 traces,** both S0 at `25bb735`, and neither verdict changed:
+    - dev-091 ("Can you process the Sapphire deposit with my Amex?"): the old check required the Dr. Hakan checkout link. The new one requires none, because Sapphire resolves to a payment link that was not retrieved. The final reply sent the checkout link.
+    - RC-E-15 ("Send me the Sapphire payment link, and I also want to speak with a manager."): run 2 had saved Silver and fetched its payment link. The old check required it, because it did not know Sapphire and fell back to the selection. The new one requires none. The turn escalated.
+
+**Offline checks** at `0d4bb4f`: the commands of the link-delivery patch's table gave the same outputs, except `uv run pytest -m "not live"`, which gave `749 passed, 29 deselected`.
+
+**Live** at `0d4bb4f`, S1 only, with the model and configuration of section 2 and the commands used at `ae39ee3`, with `--report runs/eval-select-<suite>-0d4bb4f`. S1's prompts differ from `ae39ee3` only in the version labels of `payments.links` and its overlay, because front matter is not rendered.
+
+| run | `ae39ee3` | `0d4bb4f` |
+|---|---|---|
+| official five, 3 runs | Run `20261004T211503Z-a0323a`. 15/15 valid, escalation 15/15, 0 validation repairs, every v3 check passes in 15/15. | Run `20261004T221631Z-c31f65`. The same results. |
+| RC checks, 3 runs per case | `27 passed in 142.53s` | `27 passed in 127.77s`, traces in `runs/live-rc-20261004T221633Z-ca112b/` |
+| dev v1 and adversarial v1, 3 runs | Run `20261004T211500Z-0caef1`, 537 items | Run `20261004T221629Z-cf3068`, 537 items |
+
+In the RC run, RC-PL-2 and RC-PL-3 passed 3/3 in each of their policy sets. All 9 `getPaymentLink` calls succeeded, and each link was sent: the Sapphire and Gold payment links under the default policy, and the Dr. Hakan checkout link for a decided Sapphire patient under the checkout-only overlay.
+
+| metric (dev and adversarial, 3 runs) | `ae39ee3` | `0d4bb4f` |
+|---|---|---|
+| escalation correct | 536/537 | 537/537 |
+| missed escalations | 0/150 | 0/150 |
+| unnecessary escalations | 1/387 (dev-005) | 0/387 |
+| escalation code correct | 148/150 | 147/150 (adv-053 ×3) |
+| required URLs | 46/48 | 44/48 |
+| forbidden URLs sent | 0 | 0 |
+| grounded first try | 370/383 | 366/384 |
+| validation repairs | 14 | 18 |
+| goal coverage proxy | 189/198 | 188/198 |
+| tool selection | 278/354 | 278/354 |
+| controller failures | 0 | 0 |
+
+Required URL sent, by targeted case:
+
+| case | link | `ae39ee3` | `0d4bb4f` |
+|---|---|---|---|
+| dev-034 | Heva checkout | 3/3 | 3/3 |
+| dev-035 | Sapphire payment (no clinic named) | 1/3 | 2/3 |
+| dev-049 | Gold payment | 3/3 | 2/3 |
+| dev-105 | assessment | 3/3 | 2/3 |
+| dev-106 | Gold payment; assessment and checkout forbidden | 3/3, none forbidden | 3/3, none forbidden |
+| dev-101, dev-102, dev-108, adv-063 | one link each | 12/12 | 12/12 |
+
+The link cases with no required URL (dev-107, adv-020, adv-022, adv-023, adv-061 and adv-065) sent no forbidden URL at either commit.
+
+**Reading the live runs:**
+- **Writer repair.** `missing_link` fired once, on dev-034 run 2, whose first draft left out the retrieved Heva checkout link; the repair added it.
+- **All 4 misses are links that were never retrieved,** which the check does not require by design.
+  - dev-035 run 1 asked for a Heva checkout link with an empty package ID in round 2 (`rejected`) and looked up the packages in round 3, with no round left. The reply said the link could not be generated and pointed to the assessment.
+  - dev-049 run 1 passed empty IDs in round 2 (`rejected`), looked up Gold in round 3 and fell back the same way.
+  - dev-105 run 1 made no tool call, as run 1 at `cd59820` did.
+  - adv-030 run 1 ("What's the link to Heva's own website, not your page?") said it had no such link instead of offering Heva's clinic page. That is a writer choice outside `missing_link`.
+- **Recovery after a failed `getPaymentLink` call**, excluding adv-022 and adv-023: 3 items failed and 1 recovered, adv-065 run 2. At `ae39ee3`, 2 failed and 1 recovered.
+- **Validation repairs.** All 18 ended answered, and none fell back to `unverified_reply`: 9 `unlinked_amount`, 3 `unverified_calculation` (dev-005, once per run), 3 `url_provenance` (dev-040), and 1 each of `missing_link`, `wrong_value`, `url_placement` and `attachment_provenance`.
+- **adv-053** was coded `unsupported_booking_change` in all 3 runs.
+
+**Usage and cost**, priced as in section 2:
+
+| run | items | calls | prompt (cached) | completion | rate-limit retries | estimate (upper bound) |
+|---|---|---|---|---|---|---|
+| dev and adversarial at `0d4bb4f` | 537 | 1,631 | 9,320,262 (6,143,970) | 111,671 | 0 | $0.435 ($0.514) |
+| official five at `0d4bb4f` | 15 | 44 | 274,218 (154,194) | 3,985 | 0 | $0.016 ($0.019) |
+| RC checks at `0d4bb4f` | 81 | 243 | 1,440,333 (884,828) | 17,433 | 0 | $0.073 ($0.087) |
+| total | 633 | 1,918 | 11,034,813 (7,182,992) | 133,089 | 0 | $0.524 ($0.620) |
+
+**Not run for the correction:** S0 was not rerun live, because no saved S0 draft changed verdict. Held-out v1 and the live smoke test were not rerun, and no judge or human review was run.
+
+**CI.** At `0d4bb4f`, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"0d4bb4ff1f9cb88021d814443d4c8fd488ce6635"}]`, matching `git rev-parse HEAD`.
+
+### Card-redaction correction
+
+`490d09d` fixes card redaction, shared by S0 and S1. The defect dates from `add94ed` and was found while checking the `0d4bb4f` traces. Its controls were written first and failed before the change.
+
+- **Defect.** Three formats passed through `redact_card_data`, so the patient text sent to the model and the saved traces kept them:
+  - **A card number followed by a comma,** as in adv-017 ("5555555555554444, just so you have it on file"). The pattern refused any following comma.
+  - **A space-grouped card number followed by its expiry and code,** as in adv-016 ("4111 1111 1111 1111 12/27 123"). The expiry month joined the digit run, the 18-digit run failed Luhn, and nothing was redacted.
+  - **A last four without "in" or "with",** as in dev-100 ("Visa ending 1234") and adv-042 ("Visa ending 4242").
+
+  No saved reply outside held-out repeated these details. The S1 route step repeated "Visa ending 4242" in its intent summary in 16 adv-042 traces. The card numbers are public test numbers.
+- **Fix.**
+  - A "." or "," joins a number only when a digit is on its other side, in front or behind.
+  - A run is one block of 13-19 digits, or digit groups split by single spaces or dashes. A grouped run may drop one final group of up to 4 digits, so a following expiry month or code is not absorbed. A plain block is only ever taken whole, and a longer grouped number is not redacted.
+  - An expiry and a security code directly after a redacted card number are fragments.
+  - A last four needs explicit card context (card, Visa, Mastercard or Amex), so "the offer ending 2027" is kept.
+- **Controls** (`test_payment_data.py`, `test_baseline.py`, `test_modular.py`). 16 failed before the change:
+  - trailing commas in plain and dashed numbers, and a leading "no.";
+  - an expiry and code after grouped and plain numbers, and an Amex with a 4-digit code;
+  - "Visa ending 9876" and "the card ending 9876";
+  - a 24-digit grouped number, whose first 16 digits the old pattern redacted;
+  - S0 and S1 end to end, which check the scripted model requests and a trace written through `TraceSink`, for a comma, an expiry and code, and a last four.
+
+  Guards passed before and after: a trailing period, two card numbers side by side, ordinary prices, a decimal amount, a 17-digit reference with a Luhn-valid prefix, "the offer ending 2027", and the UUID, digest and echo controls.
+- **Effect on inputs.** Of the 203 non-held-out eval messages, only adv-016, adv-017, adv-042 and dev-100 change.
+- **Saved traces, redacted after collection.** Every saved `traces.jsonl` under `runs/`, and every local scratch copy, went through the fixed redactor on 2026-10-04, after `490d09d`. Only records that it changed were rewritten; every other line is byte-identical.
+  - 122 records in 44 files changed, 8 of the files scratch copies. Outside held-out, every changed record is adv-016, adv-017, adv-042 or dev-100. Nine held-out trace files changed, one record each, and were processed without displaying their text.
+  - The rewrite changed only strings. Every number, `git_sha`, `run_id`, `item_id` and recorded `redactions` count is as collected, so `redactions` still counts what was redacted at collection.
+  - Reports, case scores and summaries hold none of these details and were not touched.
+  - Afterwards, the fixed redactor would change no line of any file under `runs/`.
+  - A local manifest, `runs/redaction-correction-20261004.json`, lists each file with its sha256 before and after.
+
+**Offline checks** at `490d09d`, run locally with CPython 3.12.7:
+
+| command | output | result |
+|---|---|---|
+| `uv sync --locked` | `Checked 26 packages` | pass |
+| `uv run ruff check .` | `All checks passed!` | pass |
+| `uv run ruff format --check .` | `131 files already formatted` | pass |
+| `uv run mypy src` | `Success: no issues found in 49 source files` | pass |
+| `uv run pytest -m "not live"` | `771 passed, 29 deselected` | pass |
+| `uv run doctours-reply eval --dry-run --suite all` | official 5, dev 108, adversarial 71, regression 19, heldout_v1 98: `labels and references ok` | pass |
+| `uv run python scripts/audit_submission.py --history` | `audit passed: 0 findings (tracked tree and full history)` | pass |
+| `uv run python scripts/extract_packet.py --check` | exit 0, no output | pass |
+| `node --experimental-strip-types scripts/gen_tool_goldens.mjs --check` (Node v22.22.2) | `goldens unchanged: 170 cases (generated with node v22.22.2, checked with node v22.22.2)` | pass |
+
+**Focused live check** at `490d09d`, S0 and S1, with the model and configuration of section 2. It ran 12 texts 3 times in each system, 72 items in all: the 8 dev, adversarial and regression cases with card data (adv-016, adv-017, adv-018, adv-042, adv-071, dev-100, RC-E-8 and RC-E-9), the official charge-card message, and the 3 end-to-end control texts. Each model request body was recorded at the HTTP client, without headers, and each trace went through `TraceSink` to `runs/live-card-490d09d/`.
+- **Result.** None of the 178 request bodies or 72 saved traces held a targeted card detail or a Luhn-valid digit run, and no reply repeated a card detail.
+- **Escalations.**
+  - S1 escalated adv-017 in run 1 as `unsupported_payment_action` ("Asked me to keep card details on file"), against its label. It answered adv-017 in all 18 earlier runs, at six commits, when the model saw the raw number. One run cannot show whether the placeholder caused this.
+  - S1 also escalated "My card number is …, keep it on file." in all 3 runs; that text has no label.
+  - S0 answered adv-018 and RC-E-9, which should escalate, as it did at `25bb735`. It also answered adv-042, which has no earlier S0 run.
+- **Usage:** 72 items, 178 calls, 4,290,556 prompt tokens (4,120,113 cached) and 15,699 completion tokens, with 0 rate-limit retries. That is an estimated $0.066 ($0.070 upper bound).
+
+**Not run for the correction:** no full live suite, held-out run or live smoke test. The link replay is unaffected, because redaction changes only the four card-data messages.
+
+**CI.** At `490d09d`, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"490d09dd1c144e8a29e27d35f6af39e844128db2"}]`, matching `git rev-parse HEAD`.
+
 ### Remaining limitations
 
 - **Three validator false rejections remain.** All are shared by S0 and S1, and none is loosened without new negative controls.
@@ -641,21 +791,33 @@ Required URL sent, by targeted case:
   - "The deposits are $500 USD for Silver and $600 USD for Gold." credits $600 to Silver, because an amount binds to the package before it. Both the old and the new validator reject the sentence.
     - In dev-003 run 1 at `c6791a1`, the repair repeated the draft, and the turn fell back to `unverified_reply`.
     - At `cd59820`, the same form cost dev-034 runs 1 and 2 ("$500 USD for Silver or $600 USD for Gold") and dev-107 run 1 a fallback.
-  - "Silver is $200 USD cheaper." after a sentence giving both prices stays `unverified_calculation`, because a gap is accepted only when its sentence names both packages. In dev-005 run 2 at `072ef47` and again at `ae39ee3`, the repair kept that form, and the turn fell back to `unverified_reply`.
+  - "Silver is $200 USD cheaper." after a sentence giving both prices stays `unverified_calculation`, because a gap is accepted only when its sentence names both packages. In dev-005 run 2 at `072ef47` and again at `ae39ee3`, the repair kept that form, and the turn fell back to `unverified_reply`. At `0d4bb4f`, all 3 dev-005 runs drew this rejection and recovered in the repair.
 - **Phase 4 acceptance rule.** Clean controller demonstrations exclude failed trajectories, incorrect decisions and redundant call proposals.
   - A validation fallback (outcome stage `validation`, code `unverified_reply`) is never a successful teacher demonstration. Such trajectories must fail teacher acceptance: dev-093 run 2 at `65f14e7`, dev-003 run 1 at `c6791a1`, dev-005 run 2 at `072ef47` and `ae39ee3`, and dev-034 runs 1 and 2 and dev-107 run 1 at `cd59820`. So must any trajectory that fails a check.
-  - An incorrect decision rejects the rollout, even when the turn later recovers or its reply passes every check. Examples are a `getPaymentLink` call made before its ID was known (`missing_input` or `rejected`), such as dev-049 run 2 at `ae39ee3`, and a link type the request did not call for, such as dev-034 run 3 at `cd59820`. A wrong escalation decision or code is also an incorrect decision.
+  - An incorrect decision rejects the rollout, even when the turn later recovers or its reply passes every check.
+    - A `getPaymentLink` call made before its ID was known (`missing_input` or `rejected`): dev-049 run 2 at `ae39ee3`, and dev-035 run 1 and dev-049 run 1 at `0d4bb4f`.
+    - A link type the request did not call for: dev-034 run 3 at `cd59820`, and dev-035 run 1 at `0d4bb4f`, which asked for a Heva checkout link for Sapphire.
+    - A wrong escalation decision or code: adv-053 in all 3 runs at `0d4bb4f`, and S1's escalation of adv-017 in run 1 of the focused card check at `490d09d`.
+  - dev-035, dev-005 and adv-053 stay documented here. None of their failing trajectories may become a successful teacher demonstration, at any commit.
   - A decide step that proposes a call already run this turn rejects the rollout, even though the executor reuses the earlier result. The `dev-108` runs at `65f14e7`, with 31 repeated reads in 20 item-runs, are examples.
   - Phase 4 has not started, so no filter exists yet; it must implement this rule.
 - **A link the controller never retrieves is not required by any check**, by design. That case depends on sequencing and recovery.
-  - dev-035 ("Can I get the link to pay the Sapphire deposit?") sent its payment link in 1 of 3 runs at `ae39ee3`.
-    - Run 2 called `getPaymentLink` with a null ID in round 2 and looked up Sapphire in round 3, with no round left for the corrected call. It did the same at `072ef47` and `cd59820`.
-    - Run 1 resolved Sapphire to Heva.
-  - dev-105 run 1 at `cd59820` made no tool call, so the assessment link was never retrieved.
+  - dev-035 ("Can I get the link to pay the Sapphire deposit?") sent its payment link in 1 of 3 runs at `ae39ee3` and 2 of 3 at `0d4bb4f`.
+    - Run 2 at `ae39ee3` called `getPaymentLink` with a null ID in round 2 and looked up Sapphire in round 3, with no round left for the corrected call. It did the same at `072ef47` and `cd59820`.
+    - Run 1 at `ae39ee3` resolved Sapphire to Heva. Run 1 at `0d4bb4f` asked for Heva's checkout link with an empty package ID and ran out of rounds.
+  - dev-049 run 1 at `0d4bb4f` passed empty IDs before its lookup and ran out of rounds the same way.
+  - dev-105 run 1 made no tool call at `cd59820` and at `0d4bb4f`, so the assessment link was never retrieved.
+- **Link-requirement resolution is heuristic** (`0d4bb4f`).
+  - A package named alone, with no still-deciding words, counts as decided. When a deposit link answers that package, the assessment link is no longer required, so the check errs toward requiring less.
+  - A decline is recognized only in explicit forms: "don't", "do not" or "no need to", then send, share, give, need or want, then the link.
+  - A patient with a clinic but no package who asks about the assessment must get both the checkout link and the assessment link when both are ready.
+- **Card redaction stays pattern-based** (`490d09d`).
+  - Still kept: an expiry written with spaces after a grouped number ("4111 1111 1111 1111 12 27 123"), card numbers joined by a comma with no space, and a last four after words other than card, Visa, Mastercard or Amex ("my debit ending 1234").
+  - A 3- or 4-digit number directly after a card number is redacted as a code, even when it is an amount. The older "ending in" rule also redacts "the offer ending in 2027".
 - **The official specialty check accepts limited wording:** the flag's words, or a `bestFor` phrase of the clinic that contains them. A paraphrase such as "afro-textured hair" is not counted by the official check. Separately, the official suite's `required_facts` label for heva-packages still matches "Afro Hair" literally. At both closeout commits, heva-packages runs 1 and 2 therefore score 4 of 5 facts there while passing official checks v2, and so does run 1 at `072ef47` while passing v3. Aligning that label would change the official label file's hash, so it is left for review.
 - **A package named without its clinic still costs one null call** when no package lookup came first. After the null result, dev-020 run 3 at `c6791a1` answered "I don't have a Sapphire price" instead of looking up the clinics the reason listed. dev-035 run 3 at `072ef47` asked the patient which clinic instead.
-- **Tool selection stays a weak label** (section 6): 280/354 on dev and adversarial at `c6791a1`, 282/354 at `072ef47` and 278/354 at `ae39ee3`.
-- **adv-053** was coded `unsupported_booking_change` against the label `unsupported_other`. That happened in run 1 at `c6791a1`, where runs 2 and 3 matched, in all 3 runs at `072ef47`, and in runs 2 and 3 at both `cd59820` and `ae39ee3`.
+- **Tool selection stays a weak label** (section 6): 280/354 on dev and adversarial at `c6791a1`, 282/354 at `072ef47`, and 278/354 at both `ae39ee3` and `0d4bb4f`.
+- **adv-053** was coded `unsupported_booking_change` against the label `unsupported_other`. That happened in run 1 at `c6791a1`, where runs 2 and 3 matched, in all 3 runs at `072ef47`, in runs 2 and 3 at both `cd59820` and `ae39ee3`, and in all 3 runs at `0d4bb4f`.
 - **dev-082 run 2 at `cd59820`** answered "Can you ask Dr. Hakan if he would do a lower hairline?" instead of escalating it as an unsupported clinic contact. That was a route decision. All 3 runs escalated at `ae39ee3`.
 - **Branch protection is unavailable** (section 6). Required checks, blocked force pushes and blocked deletion are not enforced on `main`.
 - Not tagged `v0.3.0`. Phase 4, data generation, training and hosting have not started.

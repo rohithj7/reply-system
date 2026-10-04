@@ -101,7 +101,7 @@ Scripted coverage of the requested verification items (all in `tests/unit/` unle
   - Escalated replies carry A-18's `escalationFlags`.
   - Scorer memory labels are covered in `test_evaluation.py`.
 - **Grounding failures and repair.** RC-G-1 to RC-G-13 in `test_grounding.py`. Policy amounts need their fact, and a changed fixture changes the verdict with no code change (RC-G-10). One repair is allowed, and a second failure escalates at `validation` (RC-G-11).
-- **Redaction.** Luhn-valid card numbers of 13 to 19 digits and card fragments are redacted; non-card numbers are kept. Card digits never reach the model request, trace or reply (RC-E-8). Traces never contain the API key (`test_cli.py`).
+- **Redaction.** Luhn-valid card numbers of 13 to 19 digits and card fragments are redacted; non-card numbers are kept. Card digits never reach the model request, trace or reply (RC-E-8). Correction: until `490d09d`, a card number followed by a comma, a grouped card number followed by its expiry and code, and "Visa ending 1234" escaped redaction (`phase-3.md`, Card-redaction correction). Traces never contain the API key (`test_cli.py`).
 - **Input and output ordering.** Replies follow input order under concurrency 4, with random per-item delays.
 - **Per-item isolation.** Items share no state, and permuting the input gives the same per-item replies.
 - **Malformed model responses.**
