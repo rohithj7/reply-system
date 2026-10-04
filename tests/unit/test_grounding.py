@@ -366,6 +366,39 @@ def test_clause_scope_elided_attributes_and_leading_codes(
     assert _codes(response, _evidence(fixture, HEVA, HAKAN)) == codes
 
 
+@pytest.mark.parametrize(
+    ("response", "codes"),
+    [
+        # A sentence opening with "It" or "Its" and naming no package takes the one package
+        # the sentence before it named.
+        (
+            "The Silver package at Heva Clinic is USD $3,000 and includes 3 hotel nights. "
+            "Its deposit is USD $500.",
+            [],
+        ),
+        ("Gold at Heva Clinic is $4,500 USD. Its deposit is $600 USD.", []),
+        ("Sapphire at Dr. Hakan Clinic is $3,200 USD. It needs a $500 USD deposit.", []),
+        ("Gold at Heva Clinic is $4,500 USD. Its deposit is $500 USD.", ["wrong_value"]),
+        ("Sapphire at Dr. Hakan Clinic is $3,200 USD. It costs $3,400 USD.", ["wrong_value"]),
+        ("Heva Clinic has Silver and Gold. Its deposit is $500 USD.", ["unlinked_amount"]),
+        (
+            "Silver at Heva Clinic is $3,000 USD. Happy to help. Its deposit is $500 USD.",
+            ["unlinked_amount"],
+        ),
+        (
+            "Silver at Heva Clinic is $3,000 USD. Its deposit is $500 USD for every package.",
+            ["unlinked_amount"],
+        ),
+        ("Silver at Heva Clinic is $3,000 USD. The deposit is $500 USD.", ["unlinked_amount"]),
+        ("Its deposit is $500 USD.", ["unlinked_amount"]),
+    ],
+)
+def test_a_leading_it_refers_to_the_one_package_of_the_sentence_before(
+    fixture: Fixture, response: str, codes: list[str]
+) -> None:
+    assert _codes(response, _evidence(fixture, HEVA, HAKAN)) == codes
+
+
 def test_numbers_must_appear_in_evidence_or_the_message(fixture: Fixture) -> None:
     evidence = _evidence(fixture, HEVA)
     assert _codes("Recovery takes 14 days.", evidence) == ["unsupported_number"]

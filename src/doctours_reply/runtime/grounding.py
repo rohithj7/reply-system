@@ -25,7 +25,7 @@ two packages named in the sentence ("than" picks the second). The currency must 
 """
 
 import re
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from decimal import Decimal
 
@@ -129,6 +129,8 @@ _ATTRIBUTE_NOUN = re.compile(r"\b(deposit|price|cost)", re.IGNORECASE)
 _DETACHED_AFTER = re.compile(r"(?:;|\b(?:but|while|whereas))$", re.IGNORECASE)
 _DETACHED_LEAD = re.compile(r"\s*(?:so|yet)\b", re.IGNORECASE)
 _BACK_REFERENCE = re.compile(r"\b(?:there|their|its|also|too|same)\b", re.IGNORECASE)
+_BACK_LEAD = re.compile(r"Its?\b")
+_GENERAL = re.compile(r"\b(?:every|each|all|both|any)\b", re.IGNORECASE)
 _EMBEDDED_QUESTION = re.compile(r"\b(?:which|whether)\b", re.IGNORECASE)
 _SUBJECT_OF = re.compile(
     r"\s+(?:package\s+)?(?:is|are|has|have|includes|offers|costs)\b(?!\s+not\b)", re.IGNORECASE
@@ -170,21 +172,37 @@ def check_grounding(response: str, evidence: Evidence, message: str) -> list[Vio
     message_numbers = {parse_number(n) for n in _NUMBER.findall(message)}
     message_words = set(re.findall(r"[a-z]+", message.lower()))
     violations: list[Violation] = []
+    named: set[str] = set()
     for sentence in split_sentences(response):
+        antecedent = next(iter(named)) if len(named) == 1 else None
+        named = {name for _, name in _package_spots(sentence, evidence.packages())}
         if URL.fullmatch(sentence):
             continue
-        violations += _check_sentence(sentence, evidence, message_numbers, message_words)
+        violations += _check_sentence(
+            sentence, evidence, message_numbers, message_words, antecedent
+        )
     return violations
 
 
+def _package_spots(text: str, packages: Iterable[str]) -> list[tuple[int, str]]:
+    return sorted(
+        (m.start(), name) for name in packages for m in re.finditer(rf"\b{re.escape(name)}\b", text)
+    )
+
+
 def _check_sentence(
-    sentence: str, evidence: Evidence, message_numbers: set[Decimal], message_words: set[str]
+    sentence: str,
+    evidence: Evidence,
+    message_numbers: set[Decimal],
+    message_words: set[str],
+    antecedent: str | None,
 ) -> list[Violation]:
     text = URL.sub(lambda m: " " * len(m.group()), sentence)
     packages = evidence.packages()
-    package_spots = sorted(
-        (m.start(), name) for name in packages for m in re.finditer(rf"\b{re.escape(name)}\b", text)
-    )
+    package_spots = _package_spots(text, packages)
+    claim_spots = package_spots
+    if not package_spots and antecedent and _BACK_LEAD.match(text) and not _GENERAL.search(text):
+        claim_spots = [(0, antecedent)]
     clinic_spots = _clinic_spots(text, evidence)
     violations = _name_violations(text, evidence, package_spots, clinic_spots, message_words)
     claimed: list[tuple[int, int]] = []
@@ -222,7 +240,7 @@ def _check_sentence(
         elif _MAX_CUE.search(prefix):
             violations += _aggregate(money, "max", attribute, text, evidence, clinic_spots)
         else:
-            found, fact, label = _point_claim(money, attribute, clause, evidence, package_spots)
+            found, fact, label = _point_claim(money, attribute, clause, evidence, claim_spots)
             if not _negated(text, money.start):
                 violations += found
             elif fact is not None:
