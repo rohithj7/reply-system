@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from support import HEVA_ANSWER, HEVA_ID, SILVER_ID, USER_ID
+from support import GOLD_ID, HEVA_ANSWER, HEVA_ID, SILVER_ID, USER_ID
 
 from doctours_reply.contract.io import InputItem
 from doctours_reply.models.client import ChatRequest, ChatResponse
@@ -517,6 +517,20 @@ def test_a_package_name_at_several_clinics_names_them_all_and_other_nulls_stay_b
     reasons = [entry.get("reason") for entry in controller_io.history(observations, ctx)]
     ambiguous = "no clinic is named 'Gold'; a package of that name is at A Clinic, B Clinic"
     assert reasons == [None, None, ambiguous, ambiguous, None, None]
+
+
+def test_a_lookup_by_clinic_id_is_not_explained_by_its_name() -> None:
+    fixture = resolve_fixture("packet")
+    executor = Executor(fixture.tool_data, fixture.constants)
+    both = {"clinicName": "Heva Clinic"}
+    unseen = executor.execute("unseen", "getClinicPackages", {"clinicId": "no-such-id", **both})
+    executor.execute("heva", "getClinicPackages", both)
+    by_id = executor.execute("by-id", "getClinicPackages", {"clinicId": GOLD_ID, **both})
+    assert unseen.status == "rejected"
+    assert by_id.status == "null_result"
+    ctx = build_context(0, "t1", "Gold?", fixture, resolve_policy_set("shipped"))
+    reasons = [entry.get("reason") for entry in controller_io.history(executor.observations, ctx)]
+    assert reasons == ["IDs not returned by a tool this turn: clinicId=no-such-id", None, None]
 
 
 def test_memory_is_committed_once_from_the_validated_diff_rc_w_8() -> None:

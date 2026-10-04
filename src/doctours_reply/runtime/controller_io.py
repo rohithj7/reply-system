@@ -126,7 +126,8 @@ def tool_specs(loaded: LoadedPolicies) -> list[dict[str, Any]]:
 
 def history(observations: Sequence[Observation], ctx: TurnContext) -> list[dict[str, Any]]:
     """A clinic lookup by a name that matched no clinic keeps its null result, with a
-    reason resolving the name against the context's clinics and this turn's packages."""
+    reason resolving the name against the context's clinics and this turn's packages. A
+    lookup given a clinicId ran by that ID alone, so its name explains nothing."""
     clinics = _FLAGGED_CLINIC.findall(str(ctx.fixture.constants.get("CLINIC_FLAGS") or ""))
     owners: dict[str, set[str]] = {}
     for o in observations:
@@ -137,7 +138,8 @@ def history(observations: Sequence[Observation], ctx: TurnContext) -> list[dict[
     entries = []
     for o in observations:
         entry = history_entry(o)
-        name = o.args.get("clinicName") if isinstance(o.args, dict) else None
+        args: Any = o.args if isinstance(o.args, dict) else {}
+        name = None if args.get("clinicId") else args.get("clinicName")
         if o.status == "null_result" and o.tool in _CLINIC_LOOKUPS and isinstance(name, str):
             named = [
                 c for p, c in owners.items() if re.search(rf"\b{re.escape(p)}\b", name.casefold())
