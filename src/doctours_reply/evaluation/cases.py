@@ -98,7 +98,7 @@ Suite = Literal["official", "dev", "adversarial", "regression", "heldout_v1"]
 SUITES: Final[dict[Suite, str]] = {
     "official": "official/labels.jsonl",
     "dev": "dev/v0.jsonl",
-    "adversarial": "adversarial/v0.jsonl",
+    "adversarial": "adversarial/v1.jsonl",
     "regression": "regression/rc_e.jsonl",
     "heldout_v1": "heldout/v1.jsonl",
 }

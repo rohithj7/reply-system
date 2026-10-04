@@ -1,13 +1,32 @@
 """Evaluation sets stay separate: no message text appears in two suites."""
 
 import json
+import re
 from pathlib import Path
 
-from doctours_reply.evaluation.cases import EVAL_DIR, SUITES, load_suite
+from doctours_reply.evaluation.cases import EVAL_DIR, GUARDED_SUITES, SUITES, load_suite
+
+NEAR_COPY = 0.75
 
 
 def _normalized(text: str) -> str:
     return " ".join(text.lower().split())
+
+
+def _words(text: str) -> set[str]:
+    return set(re.findall(r"[a-z0-9']+", text.lower()))
+
+
+def test_no_open_case_is_a_near_copy_of_a_heldout_case() -> None:
+    heldout = [(c.case_id, _words(c.text)) for s in GUARDED_SUITES for c in load_suite(s)]
+    for suite in SUITES:
+        if suite in GUARDED_SUITES:
+            continue
+        for case in load_suite(suite):
+            words = _words(case.text)
+            for heldout_id, heldout_words in heldout:
+                overlap = len(words & heldout_words) / max(1, len(words | heldout_words))
+                assert overlap < NEAR_COPY, (case.case_id, heldout_id)
 
 
 def test_no_message_text_appears_twice_across_suites() -> None:
