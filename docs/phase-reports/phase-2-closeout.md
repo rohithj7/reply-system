@@ -121,7 +121,7 @@ Date: 2026-10-04. The baseline measurement (`eval/results/phase2-s0-baseline.md`
 | command | actual output | result |
 |---|---|---|
 | `uv run ruff check .` | `All checks passed!` | pass |
-| `uv run ruff format --check .` | `87 files already formatted` | pass |
+| `uv run ruff format --check .` | `89 files already formatted` | pass |
 | `uv run mypy src` | `Success: no issues found in 42 source files` | pass |
 | `uv run pytest -m "not live"` | `564 passed, 2 deselected` | pass |
 | `uv run doctours-reply eval --dry-run --suite all` | `heldout_v1: 98 cases, labels and references ok` (last line) | pass |
@@ -137,7 +137,7 @@ Date: 2026-10-04. The baseline measurement (`eval/results/phase2-s0-baseline.md`
 
 ## 4. CI
 
-`gh run list --branch main --limit 1 --json headSha,conclusion` returned `c9b67405681b7ea232312559df82fac04fe1479b`, `success`, which matched `git rev-parse HEAD` before this report commit. The report commit's own run is checked after pushing.
+`gh run list --branch main --limit 1 --json headSha,conclusion` returned `success` for `c9b67405681b7ea232312559df82fac04fe1479b` (cached-token commit) and for `b30ef48601f5a4674319599cc930949b6f27a22d` (this report), each matching `git rev-parse HEAD` at the time.
 
 ## 5. Deviations and decisions
 
