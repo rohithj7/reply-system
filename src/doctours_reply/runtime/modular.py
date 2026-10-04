@@ -1,5 +1,5 @@
 """S1, the modular system: route, load, decide, execute and observe, write, validate,
-commit memory (plan 6.2, decision record 0002).
+commit memory (decision record 0002).
 
 Bounds: one route call, at most one extra skill load, at most 3 execute rounds and the
 executor's 8 tool calls, so at most 6 controller calls. The controller only proposes

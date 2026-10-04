@@ -1,4 +1,4 @@
-"""S1 controller decisions: the route step and the decide step (plan 6.2-6.3).
+"""S1 controller decisions: the route step and the decide step (decision record 0002).
 
 The controller never writes patient-facing text. It classifies intents, picks skills,
 plans tool calls from the loaded allowlist, and chooses answer, clarify or escalate.

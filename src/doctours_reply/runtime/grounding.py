@@ -1,4 +1,4 @@
-"""Entity-linked grounding checks on a reply (plan 6.4).
+"""Entity-linked grounding checks on a reply (decision record 0002).
 
 Each money amount must resolve, within its own sentence, to exactly one of: a value the
 patient gave and the reply attributes to them, a verified aggregate (minimum, maximum

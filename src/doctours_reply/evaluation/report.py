@@ -1,4 +1,4 @@
-"""Aggregate case scores into the metrics of plan 8.3, with n and Wilson intervals.
+"""Aggregate case scores into the pre-registered metrics, with n and Wilson intervals.
 
 With repeated runs, rates also carry a case-bootstrap interval and the number of cases
 whose majority of runs hit, since runs of one case are not independent.

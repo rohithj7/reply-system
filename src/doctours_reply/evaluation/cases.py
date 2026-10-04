@@ -1,4 +1,4 @@
-"""Evaluation cases, their labels and the suites under `eval/` (plan 8.3).
+"""Evaluation cases, their labels and the suites under `eval/` (traceability R-17, U-09).
 
 Labels come from the requirement list, never from expected outputs. `check_case`
 verifies label consistency against the case's fixture, so authoring errors fail early.

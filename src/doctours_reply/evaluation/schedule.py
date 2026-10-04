@@ -1,4 +1,4 @@
-"""The fixed held-out schedule and its append-only log (plan 8.2).
+"""The fixed held-out schedule and its append-only log (traceability U-10).
 
 A held-out or sealed suite runs only under a schedule row, once per row. The entry is
 appended before the run starts, so an aborted run still counts; `--void-previous`

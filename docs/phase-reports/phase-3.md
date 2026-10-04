@@ -91,11 +91,11 @@ Run locally with CPython 3.12.7 at `1e646b6`. The code is the same as at `bb7d8b
 | 6 | `bb7d8b2` | 170/171 | 0/50 | 1/121 | 49/50 | 39/43 | 117/119 | 1 / 3 | 16,502 (9,541) | 4.3 / 8.6 s |
 
 - Pass 3: dev-005 and dev-045 escalated as validator false failures, fixed in `7b6cf58`. dev-056 ("the link for" a clinic) was routed as an unsupported action; `core.escalation` 1.3.0 lists a clinic page link as tool-supported.
-- Pass 4's 19 controller retries:
-  - 8 were duplicate call ids from fetching both clinics' packages in one round, so the decide schema now asks for unique ids (`fe3e8de`).
-  - 8 asked to load a policy that was already loaded, or none at all.
+- Pass 4's 19 controller retries, across 16 items:
+  - 8 gave one call id to both clinics' package calls in a round. The semantic check already rejected duplicate ids; `fe3e8de` adds "Unique among this decision's calls." to the id in the decide schema.
+  - 7 asked to load a policy that was already loaded, or none at all.
   - 2 picked the context module `promo.none` as a skill at route.
-  - 1 repeated a call.
+  - 2 (adv-025) used call ids longer than the schema's 32 characters.
 - Pass 5: adv-003 made the same already-loaded request twice and ended as `controller_failure`. The controller template now says loaded policies are not skills to load (`bb7d8b2`). Pass 6 had 1 retry and no controller failure.
 - Pass 6's one unnecessary escalation is dev-005, a validator false failure (section 6). adv-053 (airport pickup) is coded `unsupported_booking_change`, against the label `unsupported_other`, in every pass.
 
@@ -203,7 +203,7 @@ This report and the held-out results were committed on top of `1e646b6` as `533d
 - **Adversarial v0 became v1** by appending 30 cases, with the first 41 kept verbatim. adv-054 originally conflicted with dev-086's label and was rewritten ("Order me the post-op shampoo...", `unsupported_other`) to agree with the Phase 2 labels.
 - **Controller retries are counted as `json_repairs_total`.** A route or decide step that fails its checks is retried once with the problems listed. The trace marks it `json_repair`, so this one count covers controller retries and writer JSON repairs together.
 - **Iteration used development and adversarial cases only.** The live RC checks, the official smoke and six dev and adversarial passes were the only feedback. No held-out case, label or output was read before or after the scheduled run, apart from the aggregate report and the case IDs it lists.
-- **Commit `fe3e8de` has an inaccurate message.** It says 19 items spent a retry on duplicate call ids. In fact, 19 retries happened in that iteration, and 8 of them were duplicate ids (section 2). The commit stays as pushed rather than rewriting history.
+- **Commit `fe3e8de` has an inaccurate message.** It says 19 of 171 items spent a controller retry on duplicate call ids. In fact, that pass had 19 retries across 16 items, and 8 of them were duplicate ids (section 2). The commit stays as pushed rather than rewriting history.
 
 ## 6. Open questions and blockers
 

@@ -1,4 +1,4 @@
-"""The single terminal outcome of an item (plan guarantee 6)."""
+"""The single terminal outcome of an item (decision record 0002, traceability R-05)."""
 
 from typing import Literal, Self
 

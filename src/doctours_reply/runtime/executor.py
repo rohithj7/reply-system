@@ -1,4 +1,4 @@
-"""The only component that runs packet tools (plan guarantees 1, 4 and 5).
+"""The only component that runs packet tools (decision record 0002, traceability R-13).
 
 One `Executor` serves one item. It validates arguments against the registry, requires
 clinic and package IDs to have come from a tool result this turn, runs each distinct

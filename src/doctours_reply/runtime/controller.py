@@ -1,4 +1,4 @@
-"""S1 controller steps: route and decide (plan 6.2-6.3).
+"""S1 controller steps: route and decide (decision record 0002).
 
 Each step is one model call whose JSON must parse into its decision model and pass the
 semantic checks below. An invalid decision gets one retry with the problems listed;

@@ -1,4 +1,4 @@
-"""Interval estimates and paired tests for reported rates (plan 8.4).
+"""Interval estimates and paired tests for reported rates (`eval/preregistration.md`).
 
 Runs of the same case are correlated, so the bootstrap resamples cases with all of
 their runs rather than treating every run as an independent item.

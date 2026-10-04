@@ -1,4 +1,4 @@
-"""controller_io v1: how S1 serializes each model step (plan 6.5).
+"""controller_io v1: how S1 serializes each model step (decision record 0002, Serialization).
 
 Every step is two messages: a fixed system message (the step template plus the policies
 that load on every step for this fixture) and one user message holding STATE as JSON.

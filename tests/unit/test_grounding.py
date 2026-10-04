@@ -1,4 +1,4 @@
-"""RC-G: scripted drafts checked against the facts executed this turn (plan 15.4)."""
+"""RC-G: scripted drafts checked against the facts executed this turn (decision record 0002)."""
 
 from collections.abc import Sequence
 from typing import Any

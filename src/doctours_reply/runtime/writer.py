@@ -1,4 +1,4 @@
-"""S1 writer: the grounded patient-facing reply (plan 6.6).
+"""S1 writer: the grounded patient-facing reply (decision record 0002).
 
 The writer has no tool client. It sees the loaded policies, the context and this
 turn's tool results; its draft goes through the shared validators with one JSON repair

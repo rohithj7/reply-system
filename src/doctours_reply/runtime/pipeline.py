@@ -1,4 +1,4 @@
-"""Run items in isolation and return their replies in input order (plan guarantee 8).
+"""Run items in isolation and return their replies in input order (traceability R-01, R-12).
 
 Each item gets a fresh context, executor and outcome slot; only the immutable fixture
 and policy set are shared. A model failure stops the batch: its partial trace, including

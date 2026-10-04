@@ -221,7 +221,7 @@ Commits in this phase, after `f70e26a`:
   - The remaining IDs keep their gaps.
   - `tests/guards/test_eval_sets.py` now fails if any text appears in two suites.
 - **Escalation scoring.** The official-message checks follow L759 but do not count sentences for escalations, per A-03.
-- **One current log entry per schedule row.** This is stricter than the plan. A rerun needs `--void-previous` with an infrastructure reason, and the voided row stays in the log.
+- **One current log entry per schedule row.** This is stricter than one entry per run. A rerun needs `--void-previous` with an infrastructure reason, and the voided row stays in the log.
 - **Cost** is reported as calls, retries, tokens and p50/p95 latency. There are no dollar figures, because provider prices are not part of the repo.
 - **Argument correctness is part of tool selection.** Expected tool multisets carry clinic and package arguments.
 - **RC-G-10** builds its changed fixture in the test, a modified copy of the tool data, instead of shipping a second resource fixture.

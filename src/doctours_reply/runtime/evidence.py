@@ -1,4 +1,4 @@
-"""Evidence for checking a reply: the fact table and the allowed URLs (plan 6.4).
+"""Evidence for checking a reply: the fact table and the allowed URLs (decision record 0002).
 
 Facts come from tool results executed this turn, plus static facts declared by the
 loaded policy text. Response URLs may come from tool results, declared static links,

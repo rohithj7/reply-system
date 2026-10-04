@@ -1,4 +1,4 @@
-"""Evaluation-time judge for paraphrased goal coverage and policy compliance (plan 8.3).
+"""Evaluation-time judge for paraphrased goal coverage and policy compliance.
 
 Configured with `JUDGE_BASE_URL`, `JUDGE_API_KEY` and `JUDGE_MODEL_ID`, and must be a
 different model from the system under test. It never runs inside the runtime.
