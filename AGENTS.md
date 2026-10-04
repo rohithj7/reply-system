@@ -6,7 +6,9 @@ Guide for coding agents editing this repo. Runtime behavior lives in code, `reso
 
 - `src/doctours_reply/contract/`: the `Reply` and input contract (packet L37-82).
 - `src/doctours_reply/tools/`: faithful port of the 14 packet tools, driven by fixture data; `registry.py` holds argument models, read/write kinds and `xTool` aliases.
-- `src/doctours_reply/runtime/`: `refs.py` resolves `fixture_id` and `policy_set_id` from `resources/`, verifying hashes. The shared executor, evidence, grounding, validators, redaction, outcome slot, pure finalizer and the per-item pipeline also live here.
+- `src/doctours_reply/runtime/`: `refs.py` resolves `fixture_id` and `policy_set_id` from `resources/`, verifying hashes. The shared executor, evidence, grounding, validators, redaction, outcome slot, pure finalizer and the per-item pipeline also live here. So does S1 (decision record 0002): `modular.py` (the flow), `controller.py`, `decision.py`, `controller_io.py` (step serialization), `writer.py`, `policy_loader.py` and `model_calls.py`.
+- `src/doctours_reply/policies/`: versioned policy modules with TOML front matter, in `core/`, `context/`, `skills/` and `writer/` (decision record 0004). Edit them with `.agents/skills/policy-change/SKILL.md`.
+- `schemas/`: snapshots of the `Reply` schema and S1's route and decide schemas; changes are deliberate.
 - `src/doctours_reply/baseline/`: S0, the monolithic baseline (decision record 0003). `models/`: the OpenAI-compatible client and the scripted test client. `trace/`: trace schema, redaction and sink. `cli.py`: `doctours-reply run`.
 - `src/doctours_reply/evaluation/`: `doctours-reply eval`, scorer, report and held-out schedule. Runtime modules never import it; `cli.py` dispatches to it lazily.
 - `src/doctours_reply/prompts/legacy/`: verbatim packet templates.
