@@ -66,10 +66,12 @@ def test_non_card_numbers_are_kept(text: str) -> None:
     assert redacted.card_digits == ()
 
 
-def test_uuids_are_kept_even_when_their_digits_pass_luhn(fixture: Fixture) -> None:
+def test_uuids_and_digests_are_kept_even_when_their_digits_pass_luhn(fixture: Fixture) -> None:
     clinic_id = "11111111-1111-4111-8111-111111111111"
-    redacted = redact_card_data(f"select {clinic_id} and charge 4242424242424242")
-    assert redacted.text == f"select {clinic_id} and charge {CARD_NUMBER}"
+    digest = "ab" * 8 + "4242424242424242" + "cd" * 8
+    redacted = redact_card_data(f"select {clinic_id} ({digest}) and charge 4242424242424242")
+    assert redacted.text == f"select {clinic_id} ({digest}) and charge {CARD_NUMBER}"
+    assert redact_card_data("my card is4242424242424242").text == f"my card is{CARD_NUMBER}"
     strings = [fixture.tool_data.model_dump_json(), json.dumps(dict(fixture.constants))]
     assert all(redact_card_data(s).text == s for s in strings)
 
