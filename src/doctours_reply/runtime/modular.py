@@ -3,11 +3,14 @@ commit memory (decision record 0002).
 
 Bounds: one route call, at most one extra skill load, at most 3 execute rounds and the
 executor's 8 tool calls, so at most 6 controller calls. The controller only proposes
-calls; the executor runs them against the loaded allowlist. An escalation closes the
+calls; the executor runs them against the loaded allowlist. A read this turn already ran
+with the same arguments is not run again, since its result is in STATE.history, and a
+round that runs nothing new ends the tool rounds. An escalation closes the
 executor at once, so no tool or memory call follows it, and the patient sees the
 escalation code's template sentence.
 """
 
+from collections.abc import Sequence
 from dataclasses import asdict
 from typing import Any
 
@@ -17,19 +20,21 @@ from doctours_reply.runtime.context import TurnContext
 from doctours_reply.runtime.controller import Budget, DecideState
 from doctours_reply.runtime.controller_io import (
     controller_messages,
-    history_entry,
+    history,
     tool_specs,
     writer_messages,
 )
-from doctours_reply.runtime.decision import ActionDecision, EscalationChoice, Intent
+from doctours_reply.runtime.decision import ActionDecision, EscalationChoice, Intent, PlannedCall
 from doctours_reply.runtime.escalation import template_escalation
 from doctours_reply.runtime.evidence import build_evidence
 from doctours_reply.runtime.executor import Executor
 from doctours_reply.runtime.finalize import memory_diff
+from doctours_reply.runtime.observation import Observation
 from doctours_reply.runtime.outcome import Draft, Escalation, OutcomeStage, TerminalOutcome
 from doctours_reply.runtime.policy_loader import LoadedPolicies, PolicyCatalog
 from doctours_reply.runtime.validate import check_escalation_reason
 from doctours_reply.runtime.writer import record_validation, write_reply
+from doctours_reply.tools.registry import TOOLS, UnknownToolError, resolve_tool_name
 from doctours_reply.trace.schema import TraceRecord
 
 MEMORY_CALL_ID = "memory"
@@ -59,7 +64,9 @@ def run_modular(
     rounds = 0
     while True:
         state = DecideState(known, frozenset(skills), budget, review_required)
-        decide_state = _decide_state(catalog, mandatory, loaded, route.intents, state, executor)
+        decide_state = _decide_state(
+            ctx, catalog, mandatory, loaded, route.intents, state, executor
+        )
         decision = controller.decide(
             client, controller_messages(ctx, mandatory, decide_state), trace, state
         )
@@ -77,11 +84,15 @@ def run_modular(
             budget.skill_loads_left -= 1
             continue
         rounds += 1
+        ran = 0
         for call in decision.calls:
+            if _already_read(call, executor.observations):
+                continue
             executor.execute(
                 f"r{rounds}.{call.id}", call.name, call.arguments, allowed=loaded.allowed_tools
             )
-        budget.rounds_left -= 1
+            ran += 1
+        budget.rounds_left = budget.rounds_left - 1 if ran else 0
         budget.calls_left = executor.calls_left
 
     writer_policies = catalog.writer()
@@ -122,6 +133,7 @@ def run_modular(
 
 
 def _decide_state(
+    ctx: TurnContext,
     catalog: PolicyCatalog,
     mandatory: LoadedPolicies,
     loaded: LoadedPolicies,
@@ -138,10 +150,20 @@ def _decide_state(
         "policies": _skills_only(loaded, mandatory).render(),
         "catalog": [c for c in catalog.catalog() if loadable and c["id"] not in loaded.ids],
         "tools": tool_specs(loaded),
-        "history": [history_entry(o) for o in executor.observations],
+        "history": history(executor.observations, ctx),
         "writes_executed": list(executor.executed_writes),
         "budget": state.budget.as_state(),
     }
+
+
+def _already_read(call: PlannedCall, observations: Sequence[Observation]) -> bool:
+    try:
+        spec = TOOLS[resolve_tool_name(call.name)]
+    except UnknownToolError:
+        return False
+    return spec.kind == "read" and any(
+        o.tool == spec.name and o.executed and o.args == call.arguments for o in observations
+    )
 
 
 def _skills_only(loaded: LoadedPolicies, mandatory: LoadedPolicies) -> LoadedPolicies:

@@ -12,9 +12,12 @@ from support import HEVA_ANSWER, HEVA_ID, SILVER_ID, USER_ID
 from doctours_reply.contract.io import InputItem
 from doctours_reply.models.client import ChatRequest, ChatResponse
 from doctours_reply.models.scripted import ScriptedModelClient, text_response
+from doctours_reply.runtime import controller_io
+from doctours_reply.runtime.context import build_context
 from doctours_reply.runtime.decision import SCHEMAS, FinalDecision
 from doctours_reply.runtime.executor import Executor
 from doctours_reply.runtime.finalize import finalize
+from doctours_reply.runtime.observation import Observation
 from doctours_reply.runtime.pipeline import ItemResult, RunInfo, run_item
 from doctours_reply.runtime.refs import ToolData, resolve_fixture, resolve_policy_set
 from doctours_reply.runtime.validate import check_answer, check_policy_phrases
@@ -392,6 +395,126 @@ def test_a_null_result_reaches_the_controller_and_writer_unchanged_rc_w_7() -> N
     assert _state(client.requests[3])["tool_results"] == history
 
 
+def test_a_read_already_run_this_turn_is_not_run_again() -> None:
+    heva = call("heva", "getClinicPackages", clinicName="Heva Clinic")
+    final = {"escalation_review": None, "next": "answer", "escalation": None}
+    client = ScriptedModelClient(
+        [
+            route("packages.pricing"),
+            decide("call_tools", heva, call("all", "getAllClinics")),
+            decide(
+                "call_tools",
+                heva,
+                call("hakan", "getClinicPackages", clinicName="Dr. Hakan Clinic"),
+                review=None,
+            ),
+            decide(
+                "call_tools",
+                call("again", "getClinicPackagesTool", clinicName="Heva Clinic"),
+                review=None,
+            ),
+            text_response(final),
+            draft(HEVA_ANSWER),
+        ]
+    )
+    result = _run(client, "Compare the clinics' prices.")
+    assert [(c, t) for c, t, _ in _calls(result)] == [
+        ("r1.heva", "getClinicPackages"),
+        ("r1.all", "getAllClinics"),
+        ("r2.hakan", "getClinicPackages"),
+    ]
+    assert client.requests[4].response_schema == FinalDecision.model_json_schema()
+    assert _state(client.requests[4])["budget"] == {
+        "rounds_left": 0,
+        "calls_left": 5,
+        "skill_loads_left": 1,
+    }
+
+
+@pytest.mark.parametrize(
+    ("first", "name", "reason"),
+    [
+        (
+            None,
+            "Sapphire",
+            "no clinic is named 'Sapphire'; the clinics are Heva Clinic, Dr. Hakan Clinic",
+        ),
+        (
+            "Dr. Hakan Clinic",
+            "Sapphire",
+            "no clinic is named 'Sapphire'; a package of that name is at Dr. Hakan Clinic",
+        ),
+        (
+            "Heva Clinic",
+            "the gold package",
+            "no clinic is named 'the gold package'; a package of that name is at Heva Clinic",
+        ),
+        (
+            "Heva Clinic",
+            "Istanbul Smile",
+            "no clinic is named 'Istanbul Smile'; the clinics are Heva Clinic, Dr. Hakan Clinic",
+        ),
+        (
+            "Heva Clinic",
+            "Goldman",
+            "no clinic is named 'Goldman'; the clinics are Heva Clinic, Dr. Hakan Clinic",
+        ),
+    ],
+)
+def test_a_clinic_lookup_by_a_name_that_is_no_clinic_says_what_the_name_is(
+    first: str | None, name: str, reason: str
+) -> None:
+    calls = [call("found", "getClinicPackages", clinicName=first)] if first else []
+    client = ScriptedModelClient(
+        [
+            route("packages.pricing"),
+            decide("call_tools", *calls, call("named", "getClinicPackages", clinicName=name)),
+            decide("answer", review=None),
+            draft("Happy to help."),
+        ]
+    )
+    _run(client, f"What does {name} cost?")
+    history = _state(client.requests[2])["history"]
+    assert (history[-1]["status"], history[-1]["result"], history[-1]["reason"]) == (
+        "null_result",
+        None,
+        reason,
+    )
+    assert all("reason" not in entry for entry in history[:-1])
+    assert _state(client.requests[3])["tool_results"] == history
+
+
+def test_a_package_name_at_several_clinics_names_them_all_and_other_nulls_stay_bare() -> None:
+    def seen(call_id: str, tool: str, args: dict[str, Any], result: Any = None) -> Observation:
+        status = "ok" if result is not None else "null_result"
+        return Observation(
+            call_id=call_id, tool=tool, kind="read", args=args, status=status, result=result
+        )
+
+    observations = [
+        seen(
+            "a",
+            "getClinicPackages",
+            {"clinicName": "A"},
+            {"clinicName": "A Clinic", "packages": [{"name": "Gold"}]},
+        ),
+        seen(
+            "b",
+            "getClinicPackages",
+            {"clinicName": "B"},
+            {"clinicName": "B Clinic", "packages": [{"name": "Gold"}]},
+        ),
+        seen("gold", "getClinicPackages", {"clinicName": "Gold"}),
+        seen("doctors", "getClinicDoctors", {"clinicName": "Gold"}),
+        seen("by-id", "getClinicPackages", {"clinicId": "no-such-id"}),
+        seen("patient", "getPatientContext", {"userId": USER_ID}),
+    ]
+    ctx = build_context(0, "t1", "Gold?", resolve_fixture("packet"), resolve_policy_set("shipped"))
+    reasons = [entry.get("reason") for entry in controller_io.history(observations, ctx)]
+    ambiguous = "no clinic is named 'Gold'; a package of that name is at A Clinic, B Clinic"
+    assert reasons == [None, None, ambiguous, ambiguous, None, None]
+
+
 def test_memory_is_committed_once_from_the_validated_diff_rc_w_8() -> None:
     updates = {"keyConcerns": "recovery time"}
     client = ScriptedModelClient(
@@ -425,7 +548,10 @@ def test_a_controller_planned_memory_write_is_refused_rc_w_8() -> None:
 
 
 def test_the_last_decision_has_no_tool_option_once_rounds_are_spent() -> None:
-    rounds = [decide("call_tools", LOOKUP, review=None) for _ in range(2)]
+    rounds = [
+        decide("call_tools", call("p", "getClinicPackages", clinicName=name), review=None)
+        for name in ("Heva Clinic", "Dr. Hakan Clinic")
+    ]
     client = ScriptedModelClient(
         [
             route("clinics.facts"),

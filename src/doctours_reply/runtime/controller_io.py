@@ -50,6 +50,8 @@ _CONTEXT_FIELDS: Final = {
     "user_id": "USER_ID",
     "chat_id": "SUPABASE_CHAT_ID",
 }
+_FLAGGED_CLINIC: Final = re.compile(r"^- ([^:\n]+):", re.M)
+_CLINIC_LOOKUPS: Final = frozenset({"getClinicDoctors", "getClinicPackages"})
 
 CONTROLLER_TEMPLATE: Final = """\
 You are the controller behind a patient-facing coordinator at Doctours. You never write \
@@ -122,6 +124,34 @@ def tool_specs(loaded: LoadedPolicies) -> list[dict[str, Any]]:
     return specs
 
 
+def history(observations: Sequence[Observation], ctx: TurnContext) -> list[dict[str, Any]]:
+    """A clinic lookup by a name that matched no clinic keeps its null result, with a
+    reason resolving the name against the context's clinics and this turn's packages."""
+    clinics = _FLAGGED_CLINIC.findall(str(ctx.fixture.constants.get("CLINIC_FLAGS") or ""))
+    owners: dict[str, set[str]] = {}
+    for o in observations:
+        result: Any = o.result
+        if o.status == "ok" and o.tool == "getClinicPackages" and isinstance(result, dict):
+            for package in result.get("packages") or []:
+                owners.setdefault(package["name"].casefold(), set()).add(result["clinicName"])
+    entries = []
+    for o in observations:
+        entry = history_entry(o)
+        name = o.args.get("clinicName") if isinstance(o.args, dict) else None
+        if o.status == "null_result" and o.tool in _CLINIC_LOOKUPS and isinstance(name, str):
+            named = [
+                c for p, c in owners.items() if re.search(rf"\b{re.escape(p)}\b", name.casefold())
+            ]
+            found = sorted(set().union(*named))
+            entry["reason"] = f"no clinic is named {name!r}; " + (
+                f"a package of that name is at {', '.join(found)}"
+                if found
+                else f"the clinics are {', '.join(clinics)}"
+            )
+        entries.append(entry)
+    return entries
+
+
 def history_entry(observation: Observation) -> dict[str, Any]:
     entry: dict[str, Any] = {
         "id": observation.call_id,
@@ -156,7 +186,7 @@ def writer_messages(
         "decision": decision,
         "intents": [i.model_dump() for i in intents],
         "policies": skills.render() + "\n\n" + writer_policies.render(),
-        "tool_results": [history_entry(o) for o in executed],
+        "tool_results": history(executed, ctx),
         "writes_executed": [o.call_id for o in executed if o.kind == "write" and o.executed],
     }
     return _messages(WRITER_TEMPLATE, mandatory, ctx, state)
