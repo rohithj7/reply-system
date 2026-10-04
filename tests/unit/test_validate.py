@@ -10,13 +10,15 @@ from doctours_reply.runtime.executor import Executor
 from doctours_reply.runtime.observation import Observation
 from doctours_reply.runtime.outcome import Draft
 from doctours_reply.runtime.payment_data import redact_card_data
-from doctours_reply.runtime.refs import Fixture
+from doctours_reply.runtime.policy_loader import PolicyCatalog
+from doctours_reply.runtime.refs import Fixture, resolve_policy_set
 from doctours_reply.runtime.validate import (
     check_answer,
     check_escalation_reason,
     check_escalation_sentence,
 )
 
+SHIPPED = PolicyCatalog(resolve_policy_set("shipped"))
 ASSESSMENT_URL = "https://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333"
 CHECKOUT_URL = "https://www.doctours.com/clinic/heva/checkout"
 IMAGE_URL = "https://assets.example.invalid/intake/7c2e1a40-6b8f-4d3a-9e15-2f0a8b6c4d11/front.jpg"
@@ -127,6 +129,98 @@ def test_a_ready_payment_link_for_the_patients_one_package_is_sent(
         )
     evidence = build_evidence(observations, clinics=fixture.tool_data.clinics)
     assert _codes(_draft(response), evidence, message) == codes
+
+
+@pytest.mark.parametrize(
+    ("message", "setup", "response", "codes"),
+    [
+        ("Send me the checkout link for Heva", "", "Sure, here you go.", ["missing_link"]),
+        ("send me the heva checkout link", "", "Sure, it is below.", ["missing_link"]),
+        ("I'm ready to book, what's next?", "saved", "Great, see you soon.", ["missing_link"]),
+        ("I'll take Gold, send me the link", "packages", "Great choice.", ["missing_link"]),
+        ("Send me the checkout link for Heva", "", f"Here it is.\n{CHECKOUT_URL}", []),
+        ("Heva or Dr. Hakan, which is better?", "", "Both are good.", []),
+        ("How do I pay the deposit?", "", "From the clinic checkout.", []),
+        ("I'd rather go with Dr. Hakan", "saved", "Sure.", []),
+        ("I'll take Gold, send me the link", "payment", f"Here.\n{GOLD_PAYMENT_URL}", []),
+    ],
+)
+def test_a_ready_checkout_link_for_the_patients_one_clinic_is_sent(
+    fixture: Fixture, message: str, setup: str, response: str, codes: list[str]
+) -> None:
+    executor = Executor(fixture.tool_data, fixture.constants)
+    executor.execute("c1", "getAllClinics", {})
+    if setup in ("packages", "payment"):
+        executor.execute("c2", "getClinicPackages", {"clinicName": "Heva"})
+    if setup == "payment":
+        executor.execute("c3", "getPaymentLink", {"type": "payment", "clinicPackageId": GOLD_ID})
+    executor.execute("c4", "getPaymentLink", {"type": "checkout", "clinicId": HEVA_ID})
+    observations = list(executor.observations)
+    if setup == "saved":
+        saved = {"clinicSelectionPreferences": {"selectedClinicId": HEVA_ID}}
+        observations.append(
+            Observation(
+                call_id="c5",
+                tool="getPatientContext",
+                kind="read",
+                args={"userId": fixture.constants["USER_ID"]},
+                status="ok",
+                result=saved,
+            )
+        )
+    evidence = build_evidence(observations, clinics=fixture.tool_data.clinics)
+    assert _codes(_draft(response), evidence, message) == codes
+
+
+@pytest.mark.parametrize(
+    ("message", "skills", "setup", "response", "codes"),
+    [
+        ("Is my assessment where I'd pay?", ["payments.links"], "", "Yes.", ["missing_link"]),
+        ("How do I book from the assessment?", ["payments.links"], "", "Yes.", ["missing_link"]),
+        ("Can you send me my assessment again?", ["assessment"], "", "Sure.", ["missing_link"]),
+        ("I lost the link to my results", ["assessment"], "", "No problem.", ["missing_link"]),
+        ("Can you send me my assessment again?", ["assessment"], "", f"Hi.\n{ASSESSMENT_URL}", []),
+        ("How many grafts do I need?", ["assessment"], "", "Your surgeon confirms it.", []),
+        ("Can I change my hairline in the assessment?", ["assessment"], "", "Yes.", []),
+        ("How much is the deposit?", ["payments.links"], "", "It depends on the package.", []),
+        ("Is my assessment where I'd pay?", [], "", "Yes.", []),
+        ("Is my assessment where I'd pay?", ["payments.links"], "pending", "Soon.", []),
+        ("Where do I pay?", ["payments.links"], "link asked", "Which package?", []),
+    ],
+)
+def test_the_assessment_link_is_sent_when_a_loaded_policy_answers_with_it(
+    fixture: Fixture, message: str, skills: list[str], setup: str, response: str, codes: list[str]
+) -> None:
+    executor = Executor(fixture.tool_data, fixture.constants)
+    executor.execute("c1", "getLatestAssessment", {"userId": fixture.constants["USER_ID"]})
+    if setup == "link asked":
+        executor.execute("c2", "getPaymentLink", {"type": "payment", "clinicPackageId": None})
+    observations = list(executor.observations)
+    if setup == "pending":
+        assessment = observations[0].result
+        assert isinstance(assessment, dict)
+        result = {**assessment, "shareStatus": "pending"}
+        observations[0] = observations[0].model_copy(update={"result": result})
+    cues = SHIPPED.load(skills, fixture.constants).assessment_link_cues
+    evidence = build_evidence(observations, clinics=fixture.tool_data.clinics, assessment_cues=cues)
+    assert _codes(_draft(response), evidence, message) == codes
+
+
+def test_a_decided_patient_needs_the_payment_link_not_the_assessment(fixture: Fixture) -> None:
+    executor = Executor(fixture.tool_data, fixture.constants)
+    executor.execute("c1", "getClinicPackages", {"clinicName": "Heva"})
+    executor.execute("c2", "getLatestAssessment", {"userId": fixture.constants["USER_ID"]})
+    executor.execute("c3", "getPaymentLink", {"type": "payment", "clinicPackageId": GOLD_ID})
+    cues = SHIPPED.load(["payments.links"], fixture.constants).assessment_link_cues
+    evidence = build_evidence(
+        executor.observations, clinics=fixture.tool_data.clinics, assessment_cues=cues
+    )
+    message = redact_card_data("I've decided on Gold. Can I pay from my assessment?")
+    wrong = check_answer(_draft(f"Yes, pay from it.\n{ASSESSMENT_URL}"), evidence, message)
+    assert [(v.code, v.source_ref) for v in wrong] == [("missing_link", "getPaymentLink#c3")]
+    assert GOLD_PAYMENT_URL in wrong[0].detail
+    right = _draft(f"Here is the Gold link.\n{GOLD_PAYMENT_URL}")
+    assert check_answer(right, evidence, message) == []
 
 
 def test_attachments_must_be_tool_returned(evidence: Evidence) -> None:

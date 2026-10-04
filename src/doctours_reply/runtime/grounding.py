@@ -503,7 +503,7 @@ def _nearest(spots: Sequence[tuple[int, str]], position: int) -> str | None:
     return min(after)[1] if after else None
 
 
-def _clinic_tokens(evidence: Evidence) -> dict[str, str]:
+def clinic_tokens(evidence: Evidence) -> dict[str, str]:
     tokens = {}
     for clinic_id, name in evidence.clinic_names.items():
         words = [w for w in re.findall(r"[A-Za-z]+", name) if w not in ("Dr", "Clinic")]
@@ -515,7 +515,7 @@ def _clinic_tokens(evidence: Evidence) -> dict[str, str]:
 def _clinic_spots(text: str, evidence: Evidence) -> list[tuple[int, str]]:
     return [
         (m.start(), clinic_id)
-        for token, clinic_id in _clinic_tokens(evidence).items()
+        for token, clinic_id in clinic_tokens(evidence).items()
         for m in re.finditer(rf"\b{re.escape(token)}\b", text)
     ]
 
@@ -528,7 +528,7 @@ def _name_violations(
     message_words: set[str],
 ) -> list[Violation]:
     violations = []
-    tokens = _clinic_tokens(evidence)
+    tokens = clinic_tokens(evidence)
     known_words = {w for token in tokens for w in token.split()} | set(evidence.packages())
     listed = {f.clinic_id for f in evidence.facts if f.entity_type == "package"}
 

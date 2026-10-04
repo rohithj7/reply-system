@@ -1,6 +1,6 @@
 +++
 id = "assessment"
-version = "1.0.0"
+version = "1.1.0"
 layer = "skill"
 summary = "The patient's assessment: its link, contents, readiness and revision requests"
 activates_on = [
@@ -9,6 +9,12 @@ activates_on = [
   "changing the hairline, grafts or recommended clinics",
 ]
 allowed_tools = ["getLatestAssessment", "getPatientContext"]
+assessment_link_cues = [
+  '\b(?:send|resend|lost|find|open|where)\b[^.?!]*\b(?:assessment|results)\b',
+  '\b(?:assessment|results)\b[^.?!]*\b(?:link|again)\b',
+  '\bassessment\b[^.?!]*\b(?:pay|paying|book|booking|deposit|checkout)\b',
+  '\b(?:pay|paying|book|booking|deposit|checkout)\b[^.?!]*\bassessment\b',
+]
 sources = [
   "packet:L759",
   "packet:L999-L1000",

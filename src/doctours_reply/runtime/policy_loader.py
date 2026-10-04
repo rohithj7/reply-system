@@ -61,6 +61,8 @@ class PolicyMeta(_Meta):
     allowed_tools: list[str] = []
     static_links: list[str] = []
     forbidden_patterns: list[str] = []
+    assessment_link_cues: list[str] = []
+    """Patterns for requests this module answers with the patient's assessment link."""
     facts: list[FactSpec] = []
     sources: list[str] = Field(min_length=1)
     when: When | None = None
@@ -78,11 +80,15 @@ class PolicyMeta(_Meta):
             raise ValueError("static links are https URLs")
         if any(not re.match(r"^(packet|assignment):L\d+(-L\d+)?$", s) for s in self.sources):
             raise ValueError("sources look like packet:L12-L34 or assignment:L7")
-        for pattern in self.forbidden_patterns:
-            try:
-                re.compile(pattern)
-            except re.error as exc:
-                raise ValueError(f"forbidden pattern {pattern!r}: {exc}") from exc
+        for label, patterns in (
+            ("forbidden pattern", self.forbidden_patterns),
+            ("assessment link cue", self.assessment_link_cues),
+        ):
+            for pattern in patterns:
+                try:
+                    re.compile(pattern)
+                except re.error as exc:
+                    raise ValueError(f"{label} {pattern!r}: {exc}") from exc
         return self
 
 
@@ -151,6 +157,14 @@ class LoadedPolicies:
             (f"{p.id}@{p.version}", re.compile(pattern, re.IGNORECASE))
             for p in self.policies
             for pattern in p.meta.forbidden_patterns
+        )
+
+    @property
+    def assessment_link_cues(self) -> tuple[tuple[str, re.Pattern[str]], ...]:
+        return tuple(
+            (f"{p.id}@{p.version}", re.compile(pattern, re.IGNORECASE))
+            for p in self.policies
+            for pattern in p.meta.assessment_link_cues
         )
 
     def render(self) -> str:

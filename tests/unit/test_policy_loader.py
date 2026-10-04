@@ -51,6 +51,7 @@ def test_every_shipped_module_parses_with_sources() -> None:
         ({"static_links": ["http://www.doctours.com/x"]}, "https"),
         ({"sources": ["somewhere"]}, "sources look like"),
         ({"forbidden_patterns": ["(unclosed"]}, "forbidden pattern"),
+        ({"assessment_link_cues": ["(unclosed"]}, "assessment link cue"),
         ({"surprise": "field"}, "invalid front matter"),
     ],
 )

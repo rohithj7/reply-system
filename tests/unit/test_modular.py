@@ -30,6 +30,7 @@ REVIEWED = {"needed": False, "why": "No unsupported action or request for a pers
 QUESTION = {"summary": "Asks a question", "kind": "information_request", "supported_by": "n/a"}
 HUMAN = {"summary": "Wants a person", "kind": "human_request", "supported_by": "n/a"}
 CHECKOUT_URL = "https://www.doctours.com/clinic/heva/checkout"
+ASSESSMENT_URL = "https://www.doctours.com/assessment/c3d4e5f6-3333-4333-8333-333333333333"
 LOOKUP = {"id": "clinics", "name": "getAllClinics", "arguments": {}}
 SELECTION = {"userId": USER_ID, "clinicSelection": {"selectedClinicId": HEVA_ID}}
 SAVE = {"id": "save", "name": "updateUserClinicPreferences", "arguments": SELECTION}
@@ -186,6 +187,9 @@ def test_requests_carry_the_selected_policy_text_and_tools_rc_pl_1(
         "pay the deposit from their assessment, and send its assessmentUrl",
         "send its assessmentUrl as the last line",
         "depositAmount of each package",
+        "call getPaymentLink now, with no new lookup.",
+        "call the lookup in this round and getPaymentLink in your next decision",
+        'If getPaymentLink came back "missing_input" or "rejected", look up the missing',
     ):
         assert rule in policies
     assert "getPaymentLink" in _tools(decide_request)
@@ -216,7 +220,7 @@ def test_a_tool_outside_the_loaded_policies_waits_for_its_skill_rc_pl_4() -> Non
     ]
     assert "getPaymentLink" not in _tools(client.requests[1])
     after_load = _state(client.requests[3])
-    assert "[policy payments.links v1.2.0]" in after_load["policies"]
+    assert "[policy payments.links v1.3.0]" in after_load["policies"]
     assert "getPaymentLink" in _tools(client.requests[3])
     assert after_load["budget"] == {"rounds_left": 2, "calls_left": 7, "skill_loads_left": 0}
     assert _purposes(result) == [
@@ -383,6 +387,74 @@ def test_a_draft_without_the_patients_ready_payment_link_is_repaired_to_send_it(
         client.requests[-1].messages[-1]["content"]
     )
     assert result.reply.response.endswith(GOLD_PAYMENT_URL)
+
+
+@pytest.mark.parametrize(("early", "status"), [("absent", None), (None, "ok"), ("", "rejected")])
+def test_a_payment_link_follows_the_lookup_that_returns_its_package_id(
+    early: str | None, status: str | None
+) -> None:
+    lookup = call("packages", "getClinicPackages", clinicName="Heva Clinic")
+    premature = call("early", "getPaymentLink", type="payment", clinicPackageId=early)
+    link = call("link", "getPaymentLink", type="payment", clinicPackageId=GOLD_ID)
+    client = ScriptedModelClient(
+        [
+            route("payments.links"),
+            decide("call_tools", lookup, *([] if early == "absent" else [premature])),
+            decide("call_tools", link, review=None),
+            decide("answer", review=None),
+            draft(f"Great choice, here is your payment link.\n{GOLD_PAYMENT_URL}"),
+        ]
+    )
+    result = _run(client, "Heva Gold it is, how do I pay?")
+    assert _calls(result) == [
+        ("r1.packages", "getClinicPackages", "ok"),
+        *([] if status is None else [("r1.early", "getPaymentLink", status)]),
+        ("r2.link", "getPaymentLink", "ok"),
+    ]
+    history = _state(client.requests[2])["history"]
+    assert GOLD_ID in {p["id"] for p in history[0]["result"]["packages"]}
+    if early is None:
+        assert history[1]["result"]["status"] == "missing_input"
+    assert _state(client.requests[3])["budget"]["rounds_left"] == 1
+    assert result.trace.observations[-1].result["status"] == "ready"
+    assert "validation_repair" not in _purposes(result)
+    assert result.reply.response.endswith(GOLD_PAYMENT_URL)
+
+
+@pytest.mark.parametrize(
+    ("policy_set_id", "text", "rounds", "url"),
+    [
+        (
+            "checkout-only-links",
+            "Heva Gold it is, send me the link",
+            [[LOOKUP], [call("link", "getPaymentLink", type="checkout", clinicId=HEVA_ID)]],
+            CHECKOUT_URL,
+        ),
+        (
+            "shipped",
+            "Is my assessment where I'd pay once I choose?",
+            [[call("assessment", "getLatestAssessment", userId=USER_ID)]],
+            ASSESSMENT_URL,
+        ),
+    ],
+)
+def test_a_draft_without_a_required_link_is_repaired_to_send_it(
+    policy_set_id: str, text: str, rounds: list[list[dict[str, Any]]], url: str
+) -> None:
+    client = ScriptedModelClient(
+        [
+            route("payments.links"),
+            decide("call_tools", *rounds[0]),
+            *(decide("call_tools", *calls, review=None) for calls in rounds[1:]),
+            decide("answer", review=None),
+            draft("You can do it from there."),
+            draft(f"You can do it from here.\n{url}"),
+        ]
+    )
+    result = _run(client, text, policy_set_id=policy_set_id)
+    assert _purposes(result)[-2:] == ["write", "validation_repair"]
+    assert "- missing_link: " in str(client.requests[-1].messages[-1]["content"])
+    assert result.reply.response.endswith(url)
 
 
 def test_a_repeated_write_executes_once_rc_w_6() -> None:

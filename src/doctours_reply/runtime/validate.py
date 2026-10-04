@@ -4,8 +4,13 @@ import re
 from collections.abc import Sequence
 
 from doctours_reply.contract.reply import WorkingMemoryUpdates
-from doctours_reply.runtime.evidence import Evidence, urls_in
-from doctours_reply.runtime.grounding import Violation, check_grounding, split_sentences
+from doctours_reply.runtime.evidence import Evidence, ReadyLink, urls_in
+from doctours_reply.runtime.grounding import (
+    Violation,
+    check_grounding,
+    clinic_tokens,
+    split_sentences,
+)
 from doctours_reply.runtime.outcome import Draft
 from doctours_reply.runtime.payment_data import RedactedText, echoes_card_data
 
@@ -23,6 +28,14 @@ _DATE = re.compile(
     r"|\b\d{1,2}/\d{1,2}(?:/\d{2,4})?\b|\b\d{4}-\d{2}-\d{2}\b",
     re.IGNORECASE,
 )
+_LINK_REQUESTS = {
+    "payment": "The patient has decided on {name} and its payment link is ready: "
+    "paste {url} exactly, alone on the last line.",
+    "checkout": "The patient is ready to book at {name} and its checkout link is ready: "
+    "paste {url} exactly, alone on the last line.",
+    "assessment": "The policy {policy} answers this request with the patient's assessment "
+    "link: paste {url} exactly, alone on the last line.",
+}
 
 
 def check_answer(draft: Draft, evidence: Evidence, message: RedactedText) -> list[Violation]:
@@ -137,23 +150,41 @@ def _url_violations(
 
 
 def _missing_links(response: str, evidence: Evidence, message: str) -> list[Violation]:
-    """A ready payment link for the patient's one package goes in the reply. That package is
-    their selection or the one they named, provided the message names no other package."""
-    names = {*evidence.packages(), *(link.package_name for link in evidence.payment_links)}
-    named = {n for n in names if re.search(rf"\b{re.escape(n)}\b", message, re.IGNORECASE)}
+    """A ready link the request calls for goes in the reply: the payment link for the
+    patient's one package, else the checkout link for their one clinic, else, when no deposit
+    link was asked for, the assessment link for a request a loaded policy answers with it.
+    The patient's package or clinic is their selection or the one the message names (a
+    named package names its clinic), provided the message names no other."""
+    packages = evidence.packages()
+    names = {*packages, *(link.name for link in evidence.links if link.kind == "payment")}
+    named = {n for n in names if _names(message, n)}
+    clinics = {c for token, c in clinic_tokens(evidence).items() if _names(message, token)}
+    clinics |= {f.clinic_id for n in named for f in packages.get(n, []) if f.clinic_id}
+
+    def chosen(link: ReadyLink, subject: str | None, mentioned: set[str]) -> bool:
+        return mentioned <= {subject} and (link.selected or subject in mentioned)
+
+    required = [k for k in evidence.links if k.kind == "payment" and chosen(k, k.name, named)]
+    required = required or [
+        k for k in evidence.links if k.kind == "checkout" and chosen(k, k.clinic_id, clinics)
+    ]
+    cue = next((ref for ref, cue in evidence.assessment_cues if cue.search(message)), None)
+    if not required and not evidence.deposit_link_asked and cue:
+        required = [k for k in evidence.links if k.kind == "assessment"]
     sent = set(urls_in(response))
     return [
         Violation(
             "missing_link",
-            f"The patient has decided on {link.package_name} and its payment link is ready: "
-            f"paste {link.url} exactly, alone on the last line.",
+            _LINK_REQUESTS[link.kind].format(name=link.name, url=link.url, policy=cue),
             source_ref=link.source_ref,
         )
-        for link in evidence.payment_links
+        for link in required
         if link.url not in sent
-        and named <= {link.package_name}
-        and (link.selected or link.package_name in named)
     ]
+
+
+def _names(message: str, name: str) -> bool:
+    return re.search(rf"\b{re.escape(name)}\b", message, re.IGNORECASE) is not None
 
 
 def _only_url(line: str) -> bool:

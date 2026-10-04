@@ -111,6 +111,7 @@ def run_modular(
         clinics=ctx.fixture.tool_data.clinics,
         static_facts=loaded.facts,
         static_links=loaded.static_links,
+        assessment_cues=loaded.assessment_link_cues,
         shown_text=" ".join(str(m["content"]) for m in messages),
     )
     trace.fact_table = [{**asdict(f), "value": str(f.value)} for f in evidence.facts]

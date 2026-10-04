@@ -1,4 +1,4 @@
-"""Evidence for checking a reply: the fact table, the allowed URLs and the ready payment links
+"""Evidence for checking a reply: the fact table, the allowed URLs and the ready links
 (decision record 0002).
 
 Facts come from tool results executed this turn, plus static facts declared by the
@@ -20,6 +20,7 @@ CLINIC_PAGE = "https://www.doctours.com/clinic/{slug}"
 URL = re.compile(r"https?://[^\s<>\"'()\[\]]+")
 _URL_TRAILING = ".,;:!?"
 _NUMBER = re.compile(r"\d+(?:,\d{3})*(?:\.\d+)?")
+_LINK_TYPES = ("payment", "checkout")
 
 
 @dataclass(frozen=True)
@@ -38,11 +39,14 @@ class Fact:
 
 
 @dataclass(frozen=True)
-class PaymentLink:
+class ReadyLink:
+    kind: Literal["payment", "checkout", "assessment"]
     url: str
-    package_name: str
+    name: str
+    """The package (payment link), the clinic (checkout link) or "assessment"."""
+    clinic_id: str | None
     selected: bool
-    """The package is the patient's selection: saved this turn, else already saved."""
+    """The package or clinic is the patient's selection: saved this turn, else already saved."""
     source_ref: str
 
 
@@ -54,8 +58,12 @@ class Evidence:
     clinic_names: Mapping[str, str]
     numbers: frozenset[Decimal]
     """Every number shown to the model or returned by a tool this turn."""
-    payment_links: tuple[PaymentLink, ...]
-    """Ready payment links returned by a tool this turn."""
+    links: tuple[ReadyLink, ...]
+    """Ready payment, checkout and assessment links returned by a tool this turn."""
+    deposit_link_asked: bool
+    """getPaymentLink was called this turn, whatever came back."""
+    assessment_cues: tuple[tuple[str, re.Pattern[str]], ...]
+    """Requests a loaded policy answers with the assessment link."""
 
     def packages(self) -> dict[str, list[Fact]]:
         grouped: dict[str, list[Fact]] = {}
@@ -74,6 +82,7 @@ def build_evidence(
     clinics: Sequence[Mapping[str, Any]],
     static_facts: Sequence[Fact] = (),
     static_links: Iterable[str] = (),
+    assessment_cues: Sequence[tuple[str, re.Pattern[str]]] = (),
     shown_text: str = "",
 ) -> Evidence:
     """`clinics` names the owners of observed packages; it adds no facts of its own."""
@@ -83,7 +92,8 @@ def build_evidence(
     tool_urls: set[str] = set()
     pages: set[str] = set()
     links: list[tuple[Mapping[str, Any], str]] = []
-    written = saved = None
+    written: dict[str, Any] = {}
+    saved: dict[str, Any] = {}
     for observation in executed:
         source = f"{observation.tool}#{observation.call_id}"
         for record in _records(observation.result):
@@ -93,14 +103,17 @@ def build_evidence(
         for record in _records(observation.result):
             if "basePrice" in record and "name" in record and "id" in record:
                 facts.extend(_package_facts(record, clinic_names, source))
-            if record.get("linkType") == "payment" and record.get("status") == "ready":
+            if record.get("linkType") in _LINK_TYPES and record.get("status") == "ready":
                 links.append((record, source))
-            if record.get("selectedPackageId") and observation.kind == "write":
-                written = record["selectedPackageId"]
-            elif record.get("selectedPackageId"):
-                saved = record["selectedPackageId"]
+            if isinstance(record.get("assessmentUrl"), str) and (
+                record.get("shareStatus") == "available"
+            ):
+                links.append((record, source))
+            for key in ("selectedPackageId", "selectedClinicId"):
+                if record.get(key):
+                    (written if observation.kind == "write" else saved)[key] = record[key]
         tool_urls.update(urls_in(json.dumps(observation.result, ensure_ascii=False)))
-    selected = written or saved
+    selected = saved | written
     shown = " ".join([shown_text, *(json.dumps(o.result) for o in executed)])
     numbers = {parse_number(n) for n in _NUMBER.findall(shown)}
     numbers.update(f.value for f in facts)
@@ -110,15 +123,32 @@ def build_evidence(
         attachment_urls=frozenset(tool_urls),
         clinic_names=clinic_names,
         numbers=frozenset(numbers),
-        payment_links=tuple(
-            PaymentLink(
-                link["url"],
-                link["clinicPackageName"],
-                link["clinicPackageId"] == selected,
-                source,
-            )
-            for link, source in links
-        ),
+        links=tuple(_ready_link(record, selected, source) for record, source in links),
+        deposit_link_asked=any(o.tool == "getPaymentLink" for o in observations),
+        assessment_cues=tuple(assessment_cues),
+    )
+
+
+def _ready_link(record: Mapping[str, Any], selected: Mapping[str, Any], source: str) -> ReadyLink:
+    if "assessmentUrl" in record:
+        return ReadyLink("assessment", record["assessmentUrl"], "assessment", None, False, source)
+    if record["linkType"] == "payment":
+        return ReadyLink(
+            "payment",
+            record["url"],
+            record["clinicPackageName"],
+            record["clinicId"],
+            record["clinicPackageId"] == selected.get("selectedPackageId"),
+            source,
+        )
+    clinic = record["clinicId"]
+    return ReadyLink(
+        "checkout",
+        record["url"],
+        record["clinicName"],
+        clinic,
+        clinic == selected.get("selectedClinicId"),
+        source,
     )
 
 
