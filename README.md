@@ -25,7 +25,7 @@ export MODEL_API_KEY=...
 export MODEL_ID=...
 ```
 
-Optional settings: `MODEL_TIMEOUT_SECONDS` (default 60), `MODEL_MAX_RETRIES` (default 3; applies to timeouts, connection errors, 429 and 5xx) and `MODEL_STRUCTURED_OUTPUT` (`json_schema`, the default, or `json_object` for endpoints without JSON-schema support). `MODEL_TEMPERATURE` is unset by default.
+Optional settings: `MODEL_TIMEOUT_SECONDS` (default 60), `MODEL_MAX_RETRIES` (default 3; applies to timeouts, connection errors, 429 and 5xx) and `MODEL_STRUCTURED_OUTPUT` (`json_schema`, the default, or `json_object` for endpoints without JSON-schema support). `MODEL_TEMPERATURE` and `MODEL_REASONING_EFFORT` (`none`, `minimal`, `low`, `medium`, `high`, `xhigh` or `max`) are unset by default and sent only when set; some reasoning models need `MODEL_REASONING_EFFORT=none` for tool calling. These are the only settings the client reads; concurrency is the `--concurrency` flag.
 
 ## Run
 

@@ -60,7 +60,10 @@ def test_settings_come_from_the_environment_and_hide_the_key() -> None:
     assert KEY not in repr(settings)
     public = settings.public_config()
     assert public["endpoint_host"] == "models.example.invalid"
+    assert public["reasoning_effort"] is None
     assert KEY not in str(public)
+    effort = ModelSettings.from_env({**ENV, "MODEL_REASONING_EFFORT": " none "})
+    assert effort.public_config()["reasoning_effort"] == "none"
 
 
 @pytest.mark.parametrize(
@@ -71,6 +74,7 @@ def test_settings_come_from_the_environment_and_hide_the_key() -> None:
         ({**ENV, "MODEL_BASE_URL": "models.example.invalid"}, "http(s) URL"),
         ({**ENV, "MODEL_STRUCTURED_OUTPUT": "xml"}, "json_schema or json_object"),
         ({**ENV, "MODEL_MAX_RETRIES": "many"}, "invalid numeric"),
+        ({**ENV, "MODEL_REASONING_EFFORT": "off"}, "MODEL_REASONING_EFFORT must be one of none"),
     ],
 )
 def test_missing_or_invalid_settings_are_reported(env: dict[str, str], message: str) -> None:
@@ -133,15 +137,19 @@ def test_request_shape_for_each_structured_output_mode() -> None:
     request = _request(response_schema={"type": "object"}, tools=tools, tool_choice="none")
     sdk = FakeSDK(_completion(), _completion())
     _client(sdk)[0].complete(request)
-    _client(sdk, MODEL_STRUCTURED_OUTPUT="json_object", MODEL_TEMPERATURE="0.2")[0].complete(
-        request
-    )
+    _client(
+        sdk,
+        MODEL_STRUCTURED_OUTPUT="json_object",
+        MODEL_TEMPERATURE="0.2",
+        MODEL_REASONING_EFFORT="none",
+    )[0].complete(request)
     schema_call, object_call = sdk.calls
     assert schema_call["response_format"]["type"] == "json_schema"
     assert schema_call["response_format"]["json_schema"]["schema"] == {"type": "object"}
     assert (schema_call["tool_choice"], "temperature" in schema_call) == ("none", False)
+    assert "reasoning_effort" not in schema_call
     assert object_call["response_format"] == {"type": "json_object"}
-    assert object_call["temperature"] == 0.2
+    assert (object_call["temperature"], object_call["reasoning_effort"]) == (0.2, "none")
 
 
 def test_tool_calls_are_mapped() -> None:

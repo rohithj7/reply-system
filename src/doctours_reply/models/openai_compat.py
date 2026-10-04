@@ -8,9 +8,10 @@ the key or the request.
 import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any, Literal, get_args
 
 import openai
+from openai.types.shared import ReasoningEffort
 
 from doctours_reply.models.client import (
     ChatRequest,
@@ -21,6 +22,7 @@ from doctours_reply.models.client import (
 )
 
 StructuredOutput = Literal["json_schema", "json_object"]
+_REASONING_EFFORTS: tuple[str, ...] = get_args(get_args(ReasoningEffort)[0])
 _RETRYABLE = (
     openai.APITimeoutError,
     openai.APIConnectionError,
@@ -42,6 +44,7 @@ class ModelSettings:
     max_retries: int = 3
     structured_output: StructuredOutput = "json_schema"
     temperature: float | None = None
+    reasoning_effort: str | None = None
 
     @classmethod
     def from_env(
@@ -50,8 +53,8 @@ class ModelSettings:
         """Read `<prefix>_BASE_URL`, `<prefix>_API_KEY` and the model ID, plus optional knobs.
 
         Optional: `<prefix>_TIMEOUT_SECONDS`, `<prefix>_MAX_RETRIES`,
-        `<prefix>_STRUCTURED_OUTPUT` (`json_schema` or `json_object`) and
-        `<prefix>_TEMPERATURE`.
+        `<prefix>_STRUCTURED_OUTPUT` (`json_schema` or `json_object`), `<prefix>_TEMPERATURE`
+        and `<prefix>_REASONING_EFFORT`. Unset temperature and reasoning effort are not sent.
         """
         names = _ENV[prefix]
         missing = [name for name in names if not environ.get(name, "").strip()]
@@ -79,7 +82,14 @@ class ModelSettings:
                 )
         if timeout <= 0 or not 0 <= retries <= 10:
             raise ModelConfigError(f"{prefix}_TIMEOUT_SECONDS must be > 0 and retries 0-10")
-        return cls(base_url, api_key, model_id, timeout, retries, structured, temperature)
+        reasoning = environ.get(f"{prefix}_REASONING_EFFORT", "").strip() or None
+        if reasoning is not None and reasoning not in _REASONING_EFFORTS:
+            raise ModelConfigError(
+                f"{prefix}_REASONING_EFFORT must be one of {', '.join(_REASONING_EFFORTS)}"
+            )
+        return cls(
+            base_url, api_key, model_id, timeout, retries, structured, temperature, reasoning
+        )
 
     def public_config(self) -> dict[str, Any]:
         """Settings safe to record in traces and reports: no key, no full endpoint URL."""
@@ -89,6 +99,7 @@ class ModelSettings:
             "endpoint_host": host,
             "structured_output": self.structured_output,
             "temperature": self.temperature,
+            "reasoning_effort": self.reasoning_effort,
             "timeout_seconds": self.timeout_seconds,
             "max_retries": self.max_retries,
         }
@@ -125,6 +136,8 @@ class OpenAICompatClient:
             kwargs["response_format"] = self._response_format(request)
         if self._settings.temperature is not None:
             kwargs["temperature"] = self._settings.temperature
+        if self._settings.reasoning_effort is not None:
+            kwargs["reasoning_effort"] = self._settings.reasoning_effort
         started = time.monotonic()
         attempts = self._settings.max_retries + 1
         for attempt in range(1, attempts + 1):
