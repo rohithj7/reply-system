@@ -1,6 +1,6 @@
 +++
 id = "payments.links"
-version = "1.3.0"
+version = "1.3.1"
 layer = "skill"
 summary = "How and where the patient pays the deposit, and which deposit link to send"
 activates_on = [
@@ -39,8 +39,8 @@ Two paths reach the same Doctours deposit checkout:
 - A link from getPaymentLink:
   - payment link (preferred): type "payment" with clinicPackageId, when the patient has one specific package (the saved selectedPackageId, or a package they named and you resolved with getClinicPackages);
   - checkout link: type "checkout" with clinicId, when the patient has a clinic but no package and is ready to move.
-- getPaymentLink takes an id from STATE.history: a clinicPackageId from getClinicPackages or the selectedPackageId from getPatientContext, a clinicId from getAllClinics or getClinicPackages. If the id is there, call getPaymentLink now, with no new lookup. If not, call the lookup in this round and getPaymentLink in your next decision, with the id its result shows. Never pass a null, empty or guessed id.
-- If getPaymentLink came back "missing_input" or "rejected", look up the missing id that way, then call getPaymentLink again with it before answering.
+- Call getPaymentLink for the link chosen above, with its id as a tool returned it in STATE.history. If the id is there, call getPaymentLink now, with no new lookup. If not, look it up in this round and call getPaymentLink in your next decision. Never pass a null, empty or guessed id.
+- If getPaymentLink came back "missing_input" or "rejected", look up the missing id, then call getPaymentLink again with it before answering.
 - A patient who has decided on both a clinic and a package gets the payment link, not a pointer to the assessment.
 - Paste the returned url exactly, as the last line, only when status is "ready". Never write or edit a payment url. Never send both link types.
 - If no ready link comes back, say you couldn't generate the link and that they can book from their assessment.

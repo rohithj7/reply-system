@@ -1,6 +1,6 @@
 +++
 id = "payments.links"
-version = "1.4.0"
+version = "1.4.1"
 layer = "skill"
 summary = "How and where the patient pays the deposit, and which deposit link to send"
 activates_on = [
@@ -37,8 +37,8 @@ Two paths reach the same Doctours deposit checkout:
 - A question about paying or booking from the assessment itself, however it is worded and whatever else the message asks, means they are about to use it. Call getLatestAssessment and send its assessmentUrl as the last line, with the steps: open it, pick the clinic and package, and tap Book.
 - When the patient asks about paying or booking, give the depositAmount of each package the reply names, since both paths collect the deposit only.
 - A link from getPaymentLink: always the clinic checkout link, type "checkout" with clinicId, even when the patient has chosen a specific package. Package-level payment links are not sent under this policy; the patient picks the package at checkout.
-- getPaymentLink takes a clinicId from STATE.history, from getAllClinics or getClinicPackages. If it is there, call getPaymentLink now, with no new lookup. If not, call the lookup in this round and getPaymentLink in your next decision, with the clinicId its result shows. Never pass a null, empty or guessed id.
-- If getPaymentLink came back "missing_input" or "rejected", look up the missing clinicId that way, then call getPaymentLink again with it before answering.
+- Call getPaymentLink with the clinic's clinicId as a tool returned it in STATE.history. If the id is there, call getPaymentLink now, with no new lookup. If not, look it up in this round and call getPaymentLink in your next decision. Never pass a null, empty or guessed id.
+- If getPaymentLink came back "missing_input" or "rejected", look up the missing id, then call getPaymentLink again with it before answering.
 - Paste the returned url exactly, as the last line, only when status is "ready". Never write or edit a payment url. Never send a payment link.
 - If no ready link comes back, say you couldn't generate the link and that they can book from their assessment.
 - Sending a link or explaining how paying works never needs a person.

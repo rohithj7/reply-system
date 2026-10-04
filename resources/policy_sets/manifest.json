@@ -22,8 +22,8 @@
         {
           "module_id": "payments.links",
           "path": "checkout-only-links/payments_links.md",
-          "sha256": "6aa33edbbfbc1f9274703223406891996b67c39807fa4ee4ca46876bd1010648",
-          "replaces_version": "1.3.0"
+          "sha256": "6c5be2628378a1a61567a87e976e953db36459e912fdd7e80fbfe90533c3bae9",
+          "replaces_version": "1.3.1"
         }
       ]
     },
