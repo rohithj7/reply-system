@@ -2,7 +2,7 @@
 
 Date: 2026-10-04. Last code commit: `bb7d8b2`. Docs commit `f8cacb7` and pre-registration commit `1e646b6` follow it. The scheduled held-out comparison ran at `1e646b6`. The Phase 2 closeout is in `phase-2-closeout.md`.
 
-Sections 1 to 6 describe the build measured at `1e646b6`. Section 7 is the closeout, which changed behavior after that measurement; its final checked commit is `490d09d`, after a post-review patch, a link-delivery patch, a link-requirement correction and a card-redaction correction. The semantic-review packet is `phase-3-review-packet.md`.
+Sections 1 to 6 describe the build measured at `1e646b6`. Section 7 is the closeout, which changed behavior after that measurement; its final checked commit is `df46221`, after a post-review patch, a link-delivery patch, a link-requirement correction and a card-redaction correction with an expiry-month follow-up. The semantic-review packet is `phase-3-review-packet.md`.
 
 **Evidence comes in two kinds, labelled throughout.**
 
@@ -223,7 +223,7 @@ This report and the held-out results were committed on top of `1e646b6` as `533d
 
 ## 7. Closeout
 
-Two closeout passes followed the held-out measurement. The first ended at `65f14e7`. The second fixed the failures that the first pass's live runs exposed, and ended at `c6791a1`. A post-review patch, `d88d628` to `072ef47`, then fixed three defects reported after the closeout. A link-delivery patch, `cd59820` and `ae39ee3`, followed, then a link-requirement correction, `0d4bb4f`, and a card-redaction correction, `490d09d`. None of them changed the held-out set, its labels, its schedule row or its measurements, and held-out v1 was not rerun. After the redaction correction, saved traces were redacted again, including nine held-out trace files; no score, report or commit attribution changed (Card-redaction correction, below).
+Two closeout passes followed the held-out measurement. The first ended at `65f14e7`. The second fixed the failures that the first pass's live runs exposed, and ended at `c6791a1`. A post-review patch, `d88d628` to `072ef47`, then fixed three defects reported after the closeout. A link-delivery patch, `cd59820` and `ae39ee3`, followed, then a link-requirement correction, `0d4bb4f`, and a card-redaction correction, `490d09d`, with an expiry-month follow-up, `df46221`. None of them changed the held-out set, its labels, its schedule row or its measurements, and held-out v1 was not rerun. After the redaction correction, saved traces were redacted again, including nine held-out trace files; no score, report or commit attribution changed (Card-redaction correction, below).
 
 ### Which commit each result belongs to
 
@@ -245,9 +245,10 @@ Two closeout passes followed the held-out measurement. The first ended at `65f14
   | `ae39ee3` | `payments.links` 1.3.1 (overlay 1.4.1): the sequencing rule applies to the link already chosen | S1 |
   | `0d4bb4f` | `missing_link` resolves the link kind and subject from the request, the selection and the policy's `deposit_links`; `payments.links` 1.4.0 (overlay 1.5.0) | check S0 and S1; policies S1 |
   | `490d09d` | card redaction: punctuation and group boundaries, an expiry and code after a card number, a last four with card context | S0 and S1 |
+  | `df46221` | card redaction: a one- or two-digit group before "/year" is an expiry month, never part of the card number | S0 and S1 |
 
   `80702d0` (the live RC checks persist redacted traces) and `65f14e7` (submission-local references in docstrings, the corrected duplicate-id account) change no runtime behavior.
-- **Final checked commit:** `490d09d`. The card-redaction correction's offline checks, CI and focused live check ran there. The link-requirement correction's offline checks, CI and live runs ran at `0d4bb4f`. The link-delivery patch's ran at `cd59820` and `ae39ee3`, the post-review patch's at `072ef47`, and the second pass's at `c6791a1`. Later commits change docs only.
+- **Final checked commit:** `df46221`. The expiry-month follow-up's offline checks and CI ran there. The card-redaction correction's offline checks, CI and focused live check ran at `490d09d`. The link-requirement correction's offline checks, CI and live runs ran at `0d4bb4f`. The link-delivery patch's ran at `cd59820` and `ae39ee3`, the post-review patch's at `072ef47`, and the second pass's at `c6791a1`. Later commits change docs only.
 
 ### Fixes
 
@@ -784,6 +785,15 @@ The link cases with no required URL (dev-107, adv-020, adv-022, adv-023, adv-061
 
 **CI.** At `490d09d`, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"490d09dd1c144e8a29e27d35f6af39e844128db2"}]`, matching `git rev-parse HEAD`.
 
+**Expiry-month follow-up** (`df46221`), found in review after `490d09d`.
+- **Defect.** "4111 1111 1111 1111 3/29 731" became "[CARD_NUMBER]/29 731". The card number with the month 3 passes Luhn as 17 digits, and the whole run was tried before the run without its last group, so the month was taken into the number. "/29 731" then matched no fragment pattern, and the year and security code stayed visible.
+- **Fix.** A last group of one or two digits followed by "/year" is an expiry month and is never tried as part of the number. Longer last groups are tried as before, whole run first; checked by hand, a 19-digit grouped number followed by an expiry is not shortened.
+- **Controls.** The exact input is a boundary control in `test_payment_data.py` and an S0 and S1 end-to-end control at the model-request and saved-trace boundaries. All 3 failed before the change, the end-to-end ones because "29 731" reached the model request.
+- **Effect.** None of the 203 non-held-out eval messages changes. In a dry run that printed counts only, the fixed redactor would change no line of any saved trace under `runs/` or in the scratch copies, held-out included, so no trace was rewritten.
+- **Offline checks** at `df46221`: the commands of the table above gave the same outputs, except `uv run pytest -m "not live"`, which gave `774 passed, 29 deselected`.
+- **Not run:** no live check. The focused live check at `490d09d` covers the redaction path end to end, and this change alters no eval message or saved trace.
+- **CI.** At `df46221`, `gh run list --branch main --limit 1 --json headSha,conclusion` returned `[{"conclusion":"success","headSha":"df462219a351ea94dc6021ed0e62bc9aeb4e6d98"}]`, matching `git rev-parse HEAD`.
+
 ### Remaining limitations
 
 - **Three validator false rejections remain.** All are shared by S0 and S1, and none is loosened without new negative controls.
@@ -811,7 +821,7 @@ The link cases with no required URL (dev-107, adv-020, adv-022, adv-023, adv-061
   - A package named alone, with no still-deciding words, counts as decided. When a deposit link answers that package, the assessment link is no longer required, so the check errs toward requiring less.
   - A decline is recognized only in explicit forms: "don't", "do not" or "no need to", then send, share, give, need or want, then the link.
   - A patient with a clinic but no package who asks about the assessment must get both the checkout link and the assessment link when both are ready.
-- **Card redaction stays pattern-based** (`490d09d`).
+- **Card redaction stays pattern-based** (`490d09d` and `df46221`).
   - Still kept: an expiry written with spaces after a grouped number ("4111 1111 1111 1111 12 27 123"), card numbers joined by a comma with no space, and a last four after words other than card, Visa, Mastercard or Amex ("my debit ending 1234").
   - A 3- or 4-digit number directly after a card number is redacted as a code, even when it is an amount. The older "ending in" rule also redacts "the offer ending in 2027".
 - **The official specialty check accepts limited wording:** the flag's words, or a `bestFor` phrase of the clinic that contains them. A paraphrase such as "afro-textured hair" is not counted by the official check. Separately, the official suite's `required_facts` label for heva-packages still matches "Afro Hair" literally. At both closeout commits, heva-packages runs 1 and 2 therefore score 4 of 5 facts there while passing official checks v2, and so does run 1 at `072ef47` while passing v3. Aligning that label would change the official label file's hash, so it is left for review.
