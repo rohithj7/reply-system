@@ -58,6 +58,7 @@ def test_card_fragments_are_redacted(text: str, digits: str) -> None:
         ("card no.4242424242424242 please", f"card no.{CARD_NUMBER} please"),
         ("4242424242424242 4242424242424242", f"{CARD_NUMBER} {CARD_NUMBER}"),
         ("4111 1111 1111 1111 11/29 731", f"{CARD_NUMBER} {CARD_FRAGMENT} {CARD_FRAGMENT}"),
+        ("4111 1111 1111 1111 3/29 731", f"{CARD_NUMBER} {CARD_FRAGMENT} {CARD_FRAGMENT}"),
         ("4242424242424242, 11/29, 731", f"{CARD_NUMBER}, {CARD_FRAGMENT}, {CARD_FRAGMENT}"),
         ("4111 1111 1111 1111 731 thanks", f"{CARD_NUMBER} {CARD_FRAGMENT} thanks"),
         ("378282246310005 1234", f"{CARD_NUMBER} {CARD_FRAGMENT}"),

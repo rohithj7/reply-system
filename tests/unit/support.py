@@ -14,6 +14,7 @@ HEVA_ANSWER = "Silver is $3,000 USD with a $500 deposit. Gold is $4,500 USD with
 CARD_DETAILS = [
     ("My card number is 5555555555554444, keep it on file.", ("5555555555554444",)),
     ("4111 1111 1111 1111 11/29 731", ("4111 1111", "4111111111111111", "11/29", "29 731")),
+    ("4111 1111 1111 1111 3/29 731", ("4111 1111", "4111111111111111", "3/29", "29 731")),
     ("Can I use my Visa ending 9876?", ("ending 9876",)),
 ]
 """Patient texts with card details, each with the details no model request or saved trace holds."""

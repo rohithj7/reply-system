@@ -14,6 +14,10 @@ CARD_FRAGMENT = "[CARD_FRAGMENT]"
 _PAN = re.compile(r"(?<!\d)(?<!\d[.,])(?:\d{13,19}|\d+(?:[ -]\d+)+)(?!\d|[.,]\d)")
 # A grouped card number may be followed by one short group: an expiry month or a security code.
 _LAST_GROUP = re.compile(r"[ -]\d{1,4}$")
+# A last group of one or two digits before "/year" is an expiry month, even when the card
+# number with it passes Luhn.
+_MONTH = re.compile(r"[ -]\d{1,2}$")
+_YEAR = re.compile(r"\s*/\s*\d{2,4}\b")
 # UUIDs (clinic, package and patient IDs) and hex digests can contain Luhn-valid digit runs.
 _IDENTIFIER = re.compile(
     r"\b(?:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|[0-9a-f]{32,})\b", re.IGNORECASE
@@ -59,7 +63,10 @@ def redact_card_data(text: str) -> RedactedText:
         if any(start < match.end() and match.start() < end for start, end in identifiers):
             return run
         tail = _LAST_GROUP.search(run)
-        for number in (run, run[: tail.start()]) if tail else (run,):
+        numbers: tuple[str, ...] = (run, run[: tail.start()]) if tail else (run,)
+        if _MONTH.search(run) and _YEAR.match(text, match.end()):
+            numbers = numbers[1:]
+        for number in numbers:
             digits = re.sub(r"\D", "", number)
             if 13 <= len(digits) <= 19 and _luhn_valid(digits):
                 removed.extend((digits, digits[-4:]))
