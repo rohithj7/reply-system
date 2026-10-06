@@ -103,8 +103,17 @@ def main(argv: Sequence[str]) -> int:
     except ModelConfigError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 3
-    if judge_settings and judge_settings.model_id == settings.model_id:
-        print("error: the judge must be a different model from MODEL_ID", file=sys.stderr)
+    system_models = {
+        settings.model_id,
+        settings.model_for("controller"),
+        settings.model_for("writer"),
+    }
+    if judge_settings and judge_settings.model_id in system_models:
+        print(
+            "error: the judge must be a different model from MODEL_ID, CONTROLLER_MODEL_ID"
+            " and WRITER_MODEL_ID",
+            file=sys.stderr,
+        )
         return 3
     config = {
         "suites": {s: suite_sha256(s) for s in suites},

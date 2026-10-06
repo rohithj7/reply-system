@@ -170,7 +170,10 @@ def _decide_step[D: BaseModel](
     check: Callable[[D], list[str]],
 ) -> D | None:
     request = ChatRequest(
-        messages=list(messages), response_schema=model.model_json_schema(), schema_name=purpose
+        messages=list(messages),
+        response_schema=model.model_json_schema(),
+        schema_name=purpose,
+        model_role="controller",
     )
     response = complete(client, request, trace, purpose)
     decision, problems = _parse(response, model, check)
@@ -181,6 +184,7 @@ def _decide_step[D: BaseModel](
         messages=[*messages, *follow_up(response, _RETRY.format(problems="; ".join(problems)))],
         response_schema=request.response_schema,
         schema_name=purpose,
+        model_role="controller",
     )
     response = complete(client, retry, trace, "json_repair")
     decision, _ = _parse(response, model, check)

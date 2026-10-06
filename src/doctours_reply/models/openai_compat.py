@@ -17,6 +17,7 @@ from doctours_reply.models.client import (
     ChatRequest,
     ChatResponse,
     ModelConfigError,
+    ModelRole,
     ModelUnavailableError,
     ToolCall,
 )
@@ -45,6 +46,8 @@ class ModelSettings:
     structured_output: StructuredOutput = "json_schema"
     temperature: float | None = None
     reasoning_effort: str | None = None
+    controller_model_id: str | None = None
+    writer_model_id: str | None = None
 
     @classmethod
     def from_env(
@@ -55,6 +58,8 @@ class ModelSettings:
         Optional: `<prefix>_TIMEOUT_SECONDS`, `<prefix>_MAX_RETRIES`,
         `<prefix>_STRUCTURED_OUTPUT` (`json_schema` or `json_object`), `<prefix>_TEMPERATURE`
         and `<prefix>_REASONING_EFFORT`. Unset temperature and reasoning effort are not sent.
+        `MODEL` also reads `CONTROLLER_MODEL_ID` and `WRITER_MODEL_ID`, which name other
+        models at the same endpoint for S1's two roles and default to `MODEL_ID`.
         """
         names = _ENV[prefix]
         missing = [name for name in names if not environ.get(name, "").strip()]
@@ -87,15 +92,38 @@ class ModelSettings:
             raise ModelConfigError(
                 f"{prefix}_REASONING_EFFORT must be one of {', '.join(_REASONING_EFFORTS)}"
             )
+        controller = writer = None
+        if prefix == "MODEL":
+            controller = environ.get("CONTROLLER_MODEL_ID", "").strip() or None
+            writer = environ.get("WRITER_MODEL_ID", "").strip() or None
         return cls(
-            base_url, api_key, model_id, timeout, retries, structured, temperature, reasoning
+            base_url,
+            api_key,
+            model_id,
+            timeout,
+            retries,
+            structured,
+            temperature,
+            reasoning,
+            controller,
+            writer,
         )
+
+    def model_for(self, role: ModelRole | None) -> str:
+        """The model ID that serves a request made for `role`."""
+        if role == "controller" and self.controller_model_id:
+            return self.controller_model_id
+        if role == "writer" and self.writer_model_id:
+            return self.writer_model_id
+        return self.model_id
 
     def public_config(self) -> dict[str, Any]:
         """Settings safe to record in traces and reports: no key, no full endpoint URL."""
         host = self.base_url.split("://", 1)[1].split("/", 1)[0]
         return {
             "model_id": self.model_id,
+            "controller_model_id": self.controller_model_id,
+            "writer_model_id": self.writer_model_id,
             "endpoint_host": host,
             "structured_output": self.structured_output,
             "temperature": self.temperature,
@@ -127,7 +155,8 @@ class OpenAICompatClient:
         return self._settings.model_id
 
     def complete(self, request: ChatRequest) -> ChatResponse:
-        kwargs: dict[str, Any] = {"model": self.model_id, "messages": list(request.messages)}
+        model = self._settings.model_for(request.model_role)
+        kwargs: dict[str, Any] = {"model": model, "messages": list(request.messages)}
         if request.tools:
             kwargs["tools"] = list(request.tools)
             if request.tool_choice is not None:
@@ -156,7 +185,7 @@ class OpenAICompatClient:
                 ) from None
             except openai.OpenAIError as exc:
                 raise ModelUnavailableError(f"model client error ({_describe(exc)})") from None
-        return _to_response(completion, started, attempt)
+        return _to_response(completion, started, attempt, model)
 
     def _response_format(self, request: ChatRequest) -> dict[str, Any]:
         if self._settings.structured_output == "json_object":
@@ -176,7 +205,7 @@ def _describe(exc: Exception) -> str:
     return type(exc).__name__ + (f", HTTP {status}" if status is not None else "")
 
 
-def _to_response(completion: Any, started: float, attempts: int) -> ChatResponse:
+def _to_response(completion: Any, started: float, attempts: int, model: str) -> ChatResponse:
     latency = round((time.monotonic() - started) * 1000)
     choices = getattr(completion, "choices", None) or []
     message = choices[0].message if choices else None
@@ -190,7 +219,7 @@ def _to_response(completion: Any, started: float, attempts: int) -> ChatResponse
     return ChatResponse(
         content=getattr(message, "content", None),
         tool_calls=calls,
-        model_id=getattr(completion, "model", None) or "",
+        model_id=getattr(completion, "model", None) or model,
         finish_reason=choices[0].finish_reason if choices else None,
         prompt_tokens=getattr(usage, "prompt_tokens", 0) or 0,
         cached_prompt_tokens=getattr(details, "cached_tokens", 0) or 0,

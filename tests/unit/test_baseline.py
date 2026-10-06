@@ -60,6 +60,7 @@ def test_answered_turn(fixture: Fixture, policy_set: PolicySet) -> None:
     assert [o.status for o in result.trace.observations] == ["ok"]
     assert [v.violations for v in result.trace.validations] == [[]]
     first, second = client.requests
+    assert (first.model_role, second.model_role) == (None, None)
     assert first.tool_choice == "auto"
     assert first.tools == TOOL_SCHEMAS and len(TOOL_SCHEMAS) == 14
     assert second.messages[-1]["role"] == "tool"
