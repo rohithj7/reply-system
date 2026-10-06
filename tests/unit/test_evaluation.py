@@ -7,7 +7,15 @@ from support import GOLD_ID, HEVA_ANSWER, reply_json
 from doctours_reply.contract.io import InputItem
 from doctours_reply.contract.reply import Reply
 from doctours_reply.evaluation import cli as eval_cli
-from doctours_reply.evaluation.cases import Case, FactLabel, Labels, check_case, load_suite
+from doctours_reply.evaluation.cases import (
+    Case,
+    FactLabel,
+    Labels,
+    check_case,
+    exported,
+    frozen_hash_problem,
+    load_suite,
+)
 from doctours_reply.evaluation.schedule import (
     ScheduleError,
     begin_logged_run,
@@ -334,6 +342,26 @@ def test_a_summary_without_a_log_entry_is_flagged_rc_v_4(log: Path) -> None:
 def test_eval_dry_run_validates_every_suite(capsys: pytest.CaptureFixture[str]) -> None:
     assert eval_cli.main(["--dry-run", "--suite", "all"]) == 0
     assert "heldout_v1:" in capsys.readouterr().out
+
+
+def test_all_skips_a_frozen_suite_until_its_cases_or_hash_are_committed(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    heldout = tmp_path / "heldout"
+    heldout.mkdir()
+    assert exported("dev", tmp_path)
+    assert not exported("heldout_v2", tmp_path)
+    (heldout / "v2.jsonl").write_text("")
+    assert exported("heldout_v2", tmp_path)
+    assert (
+        frozen_hash_problem("heldout_v2", tmp_path) == "heldout_v2 has no frozen hash at v2.sha256"
+    )
+    (heldout / "v2.jsonl").unlink()
+    (heldout / "v2.sha256").write_text("0" * 64 + "  v2.jsonl\n")
+    assert exported("heldout_v2", tmp_path)
+    monkeypatch.setattr(eval_cli, "exported", lambda suite: suite != "heldout_v2")
+    assert "heldout_v2" not in eval_cli._suites("all")
+    assert eval_cli._suites("heldout_v2") == ["heldout_v2"]
 
 
 def test_eval_without_model_configuration_exits_3(

@@ -1,6 +1,6 @@
 """The committed held-out log is consistent and every held-out summary has its entry."""
 
-from doctours_reply.evaluation.cases import FROZEN_HASHES, frozen_hash_problem
+from doctours_reply.evaluation.cases import FROZEN_HASHES, exported, frozen_hash_problem
 from doctours_reply.evaluation.schedule import (
     LOG_PATH,
     SCHEDULE,
@@ -21,4 +21,5 @@ def test_every_committed_summary_has_a_current_entry() -> None:
 
 
 def test_frozen_sets_match_their_committed_hashes() -> None:
-    assert [problem for suite in FROZEN_HASHES if (problem := frozen_hash_problem(suite))] == []  # type: ignore[arg-type]
+    frozen = [suite for suite in FROZEN_HASHES if exported(suite)]  # type: ignore[arg-type]
+    assert [problem for suite in frozen if (problem := frozen_hash_problem(suite))] == []  # type: ignore[arg-type]
