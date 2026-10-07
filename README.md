@@ -175,8 +175,18 @@ These are five dev-fixture scenarios through the public endpoint with `try`, thr
 
 Controller calls take 1.7 to 8.6 s each and writer calls 4.2 to 8.2 s. Tools take milliseconds. The writer's longest reply in any suite was 370 completion tokens, far below the 2,048-token cap. The save-preference draft always needs one repair, because it adds an assessment link that no tool returned in that turn.
 
+Latency is the main known limitation of this v0: a message takes 3 to 32 s. Nearly all of it is model calls, which run one after another, 1 to 6 per message. Each call costs about 0.7 to 0.9 s plus about 42 ms per generated token, from a linear fit over the 57 calls above. Possible improvements, not yet tried:
+- **Fewer calls.** The number of calls drives most of the spread. Fixing the save-preference draft would remove its repair, a full writer call in every run. A route step that also plans the first tool calls would save a decide round on simple questions.
+- **Faster tokens.** A smaller controller or an FP8-quantized model generates each token faster. Either can change decisions, so it would go through the same dev selection before serving.
+
 ## Controller training and selection
 
+- **Why train.**
+  - **The controller's task suits training.** The controller makes most of a turn's model calls: 42 of the 57 in the latency run above. Each one is a short JSON decision against a fixed schema, not prose. Narrow decisions that can be checked suit fine-tuning on a stronger model's verified traces.
+  - **A served controller has no per-call price.** Its weights are also fixed and pinned by hash (Serving, below).
+  - **Training is what makes a local controller usable.** Untuned, the base model agrees with the teacher on only 155 of 285 dev steps.
+  - **One endpoint.** The writer stays untuned, so one served model handles both roles. Reviewers need one endpoint and one key, and no cloud account.
+  - **The costs.** Quality is lower: against S1 on a cloud model, the served configuration escalates 13 of 387 messages that needed no escalation and covers fewer goals (results above). The GPU also bills by the hour whether or not it serves requests.
 - **Data.** A cloud teacher (`gpt-6-sol`) ran this repo's S1 harness as controller and writer on generated patient messages. A row was accepted only after replay, format, leakage and judge (`gpt-5.4`) checks. The dataset has 1,066 rows after deduplication:
   - 623 train rows (1,559 controller-step examples);
   - 105 dev rows (285 steps);
