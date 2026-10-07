@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Literal, Protocol
 
 Message = Mapping[str, Any]
+ModelRole = Literal["controller", "writer"]
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,8 @@ class ChatRequest:
     schema_name: str = "reply"
     tools: Sequence[Mapping[str, Any]] = ()
     tool_choice: Literal["auto", "none"] | None = None
+    model_role: ModelRole | None = None
+    """The S1 role whose configured model serves the request; None is the default model."""
 
 
 @dataclass(frozen=True)

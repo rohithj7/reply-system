@@ -373,6 +373,18 @@ def test_eval_without_model_configuration_exits_3(
     assert "MODEL_BASE_URL" in capsys.readouterr().err
 
 
+def test_the_judge_must_differ_from_every_system_model(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    for name, value in ENV.items():
+        monkeypatch.setenv(name, value)
+    judge = {"JUDGE_BASE_URL": ENV["MODEL_BASE_URL"], "JUDGE_API_KEY": "j", "JUDGE_MODEL_ID": "w1"}
+    for name, value in {**judge, "WRITER_MODEL_ID": "w1"}.items():
+        monkeypatch.setenv(name, value)
+    assert eval_cli.main(["--suite", "official", "--judge"]) == 3
+    assert "WRITER_MODEL_ID" in capsys.readouterr().err
+
+
 def test_eval_runs_offline_on_a_scripted_model_and_writes_a_report(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

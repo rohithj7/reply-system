@@ -157,6 +157,7 @@ def test_an_answered_turn_routes_decides_executes_and_writes() -> None:
     result = _run(client)
     assert (result.reply.escalate, result.reply.response) == (False, HEVA_ANSWER)
     assert _purposes(result) == ["route", "decide", "decide", "write"]
+    assert [r.model_role for r in client.requests] == ["controller"] * 3 + ["writer"]
     assert all(not r.tools for r in client.requests)
     assert _calls(result) == [("r1.heva", "getClinicPackages", "ok")]
     history = _state(client.requests[2])["history"]
@@ -327,6 +328,7 @@ def test_an_invalid_decision_is_retried_once_then_fails_closed_rc_w_2() -> None:
     client = ScriptedModelClient([route("clinics.facts"), invalid, invalid])
     result = _run(client)
     assert _purposes(result) == ["route", "decide", "json_repair"]
+    assert [r.model_role for r in client.requests] == ["controller"] * 3
     assert result.trace.observations == []
     assert result.trace.outcome is not None
     assert result.trace.outcome.stage == "controller_failure"
@@ -385,6 +387,7 @@ def test_a_draft_that_fails_validation_twice_escalates_after_the_write_rc_w_5() 
     )
     result = _run(client, "Heva it is.")
     assert _purposes(result)[-2:] == ["write", "validation_repair"]
+    assert [r.model_role for r in client.requests[-2:]] == ["writer", "writer"]
     assert len(result.trace.observations) == 2
     assert result.reply.escalationReason == "Reply could not be verified"
     outcome = result.trace.outcome

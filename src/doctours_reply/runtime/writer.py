@@ -53,7 +53,12 @@ def write_reply(
 
 
 def _request(messages: list[Message]) -> ChatRequest:
-    return ChatRequest(messages=list(messages), response_schema=DRAFT_SCHEMA, schema_name="reply")
+    return ChatRequest(
+        messages=list(messages),
+        response_schema=DRAFT_SCHEMA,
+        schema_name="reply",
+        model_role="writer",
+    )
 
 
 def _validate(

@@ -89,6 +89,26 @@ def test_missing_or_invalid_settings_are_reported(env: dict[str, str], message: 
 def test_judge_settings_use_their_own_prefix() -> None:
     with pytest.raises(ModelConfigError, match="JUDGE_BASE_URL"):
         ModelSettings.from_env(ENV, "JUDGE")
+    judge_env = {
+        "JUDGE_BASE_URL": ENV["MODEL_BASE_URL"],
+        "JUDGE_API_KEY": KEY,
+        "JUDGE_MODEL_ID": "j1",
+        "CONTROLLER_MODEL_ID": "c1",
+    }
+    assert ModelSettings.from_env(judge_env, "JUDGE").model_for("controller") == "j1"
+
+
+def test_controller_and_writer_requests_go_to_their_own_model_ids() -> None:
+    unnamed = _completion()
+    unnamed.model = None
+    sdk = FakeSDK(_completion(), unnamed, _completion())
+    client, _ = _client(sdk, CONTROLLER_MODEL_ID=" controller-lora ", WRITER_MODEL_ID=" ")
+    responses = [client.complete(_request(model_role=role)) for role in ("writer", "controller")]
+    client.complete(_request())
+    assert [call["model"] for call in sdk.calls] == ["m1", "controller-lora", "m1"]
+    assert responses[1].model_id == "controller-lora"
+    public = ModelSettings.from_env({**ENV, "WRITER_MODEL_ID": "w1"}).public_config()
+    assert (public["controller_model_id"], public["writer_model_id"]) == (None, "w1")
 
 
 @pytest.mark.parametrize(
