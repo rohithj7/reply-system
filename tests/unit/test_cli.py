@@ -1,3 +1,4 @@
+import io
 import json
 from pathlib import Path
 
@@ -113,6 +114,50 @@ def test_a_model_failure_exits_4_and_keeps_the_previous_output(
     assert "item 0 ('a') failed" in capsys.readouterr().err
     record = json.loads((traces / "traces.jsonl").read_text())
     assert record["error"].startswith("model endpoint failed")
+
+
+def test_try_prints_each_reply_with_its_timings_and_trace(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _scripted(
+        monkeypatch,
+        [
+            tool_response(("getClinicPackages", {"clinicName": "Heva"})),
+            text_response(reply_json(HEVA_ANSWER)),
+        ],
+    )
+    traces = tmp_path / "traces"
+    assert cli.main(["try", "--trace-dir", str(traces), "Heva prices?"]) == 0
+    out = capsys.readouterr().out
+    assert f"reply: {HEVA_ANSWER}" in out
+    assert "elapsed: " in out and "tool getClinicPackages" in out
+    assert out.count("\n  turn ") == 2
+    assert f"trace: {traces / 'traces.jsonl'}, item try-1" in out
+    [record] = [json.loads(line) for line in (traces / "traces.jsonl").read_text().splitlines()]
+    assert record["item_id"] == "try-1" and record["reply"]["response"] == HEVA_ANSWER
+
+
+def test_try_reads_a_prompt_until_end_of_input_and_keeps_going_after_a_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _scripted(
+        monkeypatch,
+        [
+            ModelUnavailableError("model endpoint failed after 4 attempts"),
+            text_response(reply_json("Happy to help.")),
+        ],
+    )
+    monkeypatch.setattr("sys.stdin", io.StringIO("hi\nthanks\n"))
+    assert cli.main(["try", "--trace-dir", str(tmp_path)]) == 4
+    captured = capsys.readouterr()
+    assert "item 0 ('try-1') failed" in captured.err
+    assert "reply: Happy to help." in captured.out and "item try-2" in captured.out
+    records = [json.loads(line) for line in (tmp_path / "traces.jsonl").read_text().splitlines()]
+    assert [r["item_id"] for r in records] == ["try-1", "try-2"]
+
+
+def test_try_without_model_configuration_exits_3(no_model_env: None) -> None:
+    assert cli.main(["try", "hi"]) == 3
 
 
 def test_write_atomic_replaces_the_file_in_one_step(tmp_path: Path) -> None:
