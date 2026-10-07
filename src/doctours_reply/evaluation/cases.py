@@ -94,16 +94,17 @@ class OfficialLabel(_Label):
     labels: Labels
 
 
-Suite = Literal["official", "dev", "adversarial", "regression", "heldout_v1"]
+Suite = Literal["official", "dev", "adversarial", "regression", "heldout_v1", "heldout_v2"]
 SUITES: Final[dict[Suite, str]] = {
     "official": "official/labels.jsonl",
     "dev": "dev/v1.jsonl",
     "adversarial": "adversarial/v1.jsonl",
     "regression": "regression/rc_e.jsonl",
     "heldout_v1": "heldout/v1.jsonl",
+    "heldout_v2": "heldout/v2.jsonl",
 }
-GUARDED_SUITES: Final = frozenset({"heldout_v1"})
-FROZEN_HASHES: Final = {"heldout_v1": "heldout/v1.sha256"}
+GUARDED_SUITES: Final = frozenset({"heldout_v1", "heldout_v2"})
+FROZEN_HASHES: Final = {"heldout_v1": "heldout/v1.sha256", "heldout_v2": "heldout/v2.sha256"}
 
 
 class CaseError(ValueError):
@@ -112,6 +113,15 @@ class CaseError(ValueError):
 
 def suite_path(suite: Suite, eval_dir: Path = EVAL_DIR) -> Path:
     return eval_dir / SUITES[suite]
+
+
+def exported(suite: Suite, eval_dir: Path = EVAL_DIR) -> bool:
+    """False only for a frozen suite whose cases and hash are both not committed yet."""
+    return (
+        suite not in FROZEN_HASHES
+        or suite_path(suite, eval_dir).is_file()
+        or (eval_dir / FROZEN_HASHES[suite]).is_file()
+    )
 
 
 def suite_sha256(suite: Suite, eval_dir: Path = EVAL_DIR) -> str:

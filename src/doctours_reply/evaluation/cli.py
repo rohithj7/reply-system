@@ -26,6 +26,7 @@ from doctours_reply.evaluation.cases import (
     CaseError,
     Suite,
     check_case,
+    exported,
     frozen_hash_problem,
     load_suite,
     suite_sha256,
@@ -225,7 +226,10 @@ def _case_problems(case: Case) -> list[str]:
 
 
 def _suites(value: str) -> list[Suite]:
-    names = list(SUITES) if value == "all" else [v.strip() for v in value.split(",") if v.strip()]
+    if value == "all":
+        names: list[str] = [s for s in SUITES if exported(s)]
+    else:
+        names = [v.strip() for v in value.split(",") if v.strip()]
     unknown = [n for n in names if n not in SUITES]
     if unknown or not names:
         raise ValueError(

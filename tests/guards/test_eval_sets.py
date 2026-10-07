@@ -4,9 +4,10 @@ import json
 import re
 from pathlib import Path
 
-from doctours_reply.evaluation.cases import EVAL_DIR, GUARDED_SUITES, SUITES, load_suite
+from doctours_reply.evaluation.cases import EVAL_DIR, GUARDED_SUITES, SUITES, exported, load_suite
 
 NEAR_COPY = 0.75
+COMMITTED = [suite for suite in SUITES if exported(suite)]
 
 
 def _normalized(text: str) -> str:
@@ -18,8 +19,10 @@ def _words(text: str) -> set[str]:
 
 
 def test_no_open_case_is_a_near_copy_of_a_heldout_case() -> None:
-    heldout = [(c.case_id, _words(c.text)) for s in GUARDED_SUITES for c in load_suite(s)]
-    for suite in SUITES:
+    heldout = [
+        (c.case_id, _words(c.text)) for s in COMMITTED if s in GUARDED_SUITES for c in load_suite(s)
+    ]
+    for suite in COMMITTED:
         if suite in GUARDED_SUITES:
             continue
         for case in load_suite(suite):
@@ -31,7 +34,7 @@ def test_no_open_case_is_a_near_copy_of_a_heldout_case() -> None:
 
 def test_no_message_text_appears_twice_across_suites() -> None:
     seen: dict[str, str] = {}
-    for suite in SUITES:
+    for suite in COMMITTED:
         for case in load_suite(suite):
             text = _normalized(case.text)
             assert text not in seen, (case.case_id, seen.get(text))
@@ -40,7 +43,7 @@ def test_no_message_text_appears_twice_across_suites() -> None:
 
 def test_case_ids_are_unique_across_suites() -> None:
     seen: dict[str, str] = {}
-    for suite in SUITES:
+    for suite in COMMITTED:
         for case in load_suite(suite):
             assert case.case_id not in seen, (case.case_id, seen.get(case.case_id), suite)
             seen[case.case_id] = suite
